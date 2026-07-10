@@ -1,7 +1,8 @@
 import { useState } from 'react'
-import { Sparkles } from 'lucide-react'
+import { Moon, Sparkles, Sun } from 'lucide-react'
 import { toast } from 'sonner'
 import { useAuth } from '@/store/auth'
+import { useTheme } from '@/hooks/useTheme'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -17,6 +18,7 @@ import { VantaBackground } from '@/components/common/VantaBackground'
 type Mode = 'signin' | 'signup' | 'reset'
 
 export function Login() {
+  const { theme, toggle } = useTheme()
   const signIn = useAuth((s) => s.signIn)
   const signUp = useAuth((s) => s.signUp)
   const resetPassword = useAuth((s) => s.resetPassword)
@@ -75,8 +77,21 @@ export function Login() {
 
   return (
     <div className="flex min-h-screen items-center justify-center p-4">
-      <VantaBackground />
-      <Card className="glass w-full max-w-sm border-black/5 shadow-lift dark:border-white/5">
+      <VantaBackground theme={theme} />
+      <Card className="glass relative w-full max-w-sm border-black/5 shadow-lift dark:border-white/5">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={toggle}
+          aria-label="Đổi giao diện sáng / tối"
+          className="absolute top-3 right-3 rounded-xl text-muted-foreground"
+        >
+          {theme === 'dark' ? (
+            <Moon className="size-4" />
+          ) : (
+            <Sun className="size-4" />
+          )}
+        </Button>
         <CardHeader className="items-center text-center">
           <div className="mb-2 flex items-center justify-center gap-2 font-display text-2xl font-bold tracking-tight">
             <span className="grad-btn grid size-8 place-items-center rounded-lg text-white shadow-lift">

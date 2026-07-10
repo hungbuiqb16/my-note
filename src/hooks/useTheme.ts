@@ -7,9 +7,18 @@ const STORAGE_KEY = 'noteflow-theme'
 function getInitialTheme(): Theme {
   const stored = localStorage.getItem(STORAGE_KEY)
   if (stored === 'light' || stored === 'dark') return stored
-  return window.matchMedia('(prefers-color-scheme: dark)').matches
-    ? 'dark'
-    : 'light'
+  return 'dark' // default interface
+}
+
+/**
+ * Apply the stored/system theme to <html> immediately at startup so every
+ * screen (login, splash, share) is themed before React mounts.
+ */
+export function initTheme(): void {
+  document.documentElement.classList.toggle(
+    'dark',
+    getInitialTheme() === 'dark',
+  )
 }
 
 /** Manages the `dark` class on <html>, persisting the choice to localStorage. */

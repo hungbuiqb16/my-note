@@ -9,7 +9,7 @@ interface VantaEffect {
  * three + vanta are lazy-loaded so they only ship on pages that use this.
  * Falls back silently (no animation) if WebGL/init fails or reduced-motion.
  */
-export function VantaBackground() {
+export function VantaBackground({ theme }: { theme: 'light' | 'dark' }) {
   const ref = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -27,7 +27,6 @@ export function VantaBackground() {
         const BIRDS = window.VANTA?.BIRDS
         if (cancelled || !ref.current || !BIRDS) return
 
-        const dark = document.documentElement.classList.contains('dark')
         effect = BIRDS({
           el: ref.current,
           THREE,
@@ -38,7 +37,7 @@ export function VantaBackground() {
           minWidth: 200,
           scale: 1,
           scaleMobile: 1,
-          backgroundColor: dark ? 0x0c0e14 : 0xf3f4f8,
+          backgroundColor: theme === 'dark' ? 0x0c0e14 : 0xf3f4f8,
           color1: 0x4f6bff,
           color2: 0x9a5cff,
           colorMode: 'variance',
@@ -59,7 +58,8 @@ export function VantaBackground() {
       cancelled = true
       effect?.destroy()
     }
-  }, [])
+    // Re-create the effect when the theme changes so the background matches.
+  }, [theme])
 
   return <div ref={ref} aria-hidden className="fixed inset-0 -z-10" />
 }

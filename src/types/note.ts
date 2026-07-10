@@ -9,6 +9,8 @@ export interface Note {
   isPublic: boolean
   /** Unguessable id used in the public share URL. */
   shareId: string
+  /** Whether `content` is client-side encrypted (ciphertext). */
+  isEncrypted: boolean
   /** Last-update time in ms (derived from `updated_at`). */
   updated: number
   /** Client-only: a new note not yet persisted (empty drafts are never saved). */
@@ -27,6 +29,7 @@ export interface NoteRow {
   tags: string[] | null
   is_public: boolean
   share_id: string
+  is_encrypted: boolean
   created_at: string
   updated_at: string
 }

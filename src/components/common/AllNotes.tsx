@@ -3,6 +3,7 @@ import {
   ChevronLeft,
   ChevronRight,
   EllipsisVertical,
+  Lock,
   Menu,
   Pin,
   PinOff,
@@ -103,7 +104,9 @@ export function AllNotes({ className, onOpen, onOpenSidebar }: AllNotesProps) {
         <h2 className="font-display text-lg font-bold tracking-tight">
           Tất cả ghi chú
         </h2>
-        <span className="text-xs text-muted-foreground">{visible.length} ghi chú</span>
+        <span className="text-xs text-muted-foreground">
+          {visible.length} ghi chú
+        </span>
       </div>
 
       <div className="flex-1 overflow-y-auto p-4 md:p-6">
@@ -130,13 +133,24 @@ export function AllNotes({ className, onOpen, onOpenSidebar }: AllNotesProps) {
                     >
                       {note.title || 'Chưa có tiêu đề'}
                     </h3>
-                    {note.pinned && (
-                      <Pin className="mt-0.5 size-3.5 shrink-0 fill-primary text-primary" />
-                    )}
+                    <div className="mt-0.5 flex shrink-0 items-center gap-1">
+                      {note.isEncrypted && (
+                        <Lock className="size-3.5 text-primary" />
+                      )}
+                      {note.pinned && (
+                        <Pin className="size-3.5 fill-primary text-primary" />
+                      )}
+                    </div>
                   </div>
-                  <p className="mt-1 line-clamp-3 flex-1 text-[13px] whitespace-pre-wrap text-muted-foreground">
-                    {note.content || 'Trống'}
-                  </p>
+                  {note.isEncrypted ? (
+                    <p className="mt-1 flex flex-1 items-center gap-1.5 text-[13px] text-muted-foreground italic">
+                      <Lock className="size-3.5" /> Nội dung được mã hóa
+                    </p>
+                  ) : (
+                    <p className="mt-1 line-clamp-3 flex-1 text-[13px] whitespace-pre-wrap text-muted-foreground">
+                      {note.content || 'Trống'}
+                    </p>
+                  )}
                   {note.tags.length > 0 && (
                     <div className="mt-2 flex flex-wrap gap-1">
                       {note.tags.slice(0, 3).map((tag) => (

@@ -4,6 +4,7 @@ import { Sidebar } from '@/components/common/Sidebar'
 import { Editor } from '@/components/common/Editor'
 import { AllNotes } from '@/components/common/AllNotes'
 import { useNotes } from '@/store/notes'
+import { useVault } from '@/store/vault'
 import { useTheme } from '@/hooks/useTheme'
 import { useUnsavedGuard } from '@/hooks/useUnsavedGuard'
 
@@ -23,6 +24,9 @@ export function AppLayout() {
   const select = useNotes((s) => s.select)
   const load = useNotes((s) => s.load)
   const clear = useNotes((s) => s.clear)
+  const discardIfEmpty = useNotes((s) => s.discardIfEmpty)
+  const loadVault = useVault((s) => s.loadMeta)
+  const resetVault = useVault((s) => s.reset)
   const currentNote = notes.find((n) => n.id === currentId) ?? null
 
   const showingEditor = mode === 'editor' && currentNote !== null
@@ -40,15 +44,20 @@ export function AppLayout() {
   }
 
   const showGrid = () => {
+    discardIfEmpty(currentId) // drop an untouched blank draft when leaving the editor
     setMode('all')
     setMobileView('main')
   }
 
-  // Load this user's notes on mount; clear them on logout (unmount).
+  // Load this user's notes + vault metadata on mount; clear on logout (unmount).
   useEffect(() => {
     void load()
-    return () => clear()
-  }, [load, clear])
+    void loadVault()
+    return () => {
+      clear()
+      resetVault()
+    }
+  }, [load, clear, loadVault, resetVault])
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {

@@ -10,8 +10,22 @@ function toNote(row: NoteRow): Note {
     tags: row.tags ?? [],
     isPublic: row.is_public,
     shareId: row.share_id,
+    isEncrypted: row.is_encrypted,
     updated: Date.parse(row.updated_at),
   }
+}
+
+/** Set a note's content + encrypted flag together (toggle secure). */
+export async function setNoteEncryption(
+  id: string,
+  isEncrypted: boolean,
+  content: string,
+): Promise<void> {
+  const { error } = await supabase
+    .from('notes')
+    .update({ is_encrypted: isEncrypted, content })
+    .eq('id', id)
+  if (error) throw error
 }
 
 /** Toggle a note's public (read-only share) state. */

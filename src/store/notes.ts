@@ -16,9 +16,17 @@ interface NotesState {
   clear: () => void
   select: (id: string) => void
   create: () => void
+  /** Drop the note if it's still empty (a draft vanishes; a saved note is deleted). */
+  discardIfEmpty: (id: string | null) => void
   update: (patch: Partial<Pick<Note, 'title' | 'content'>>) => void
   setTags: (id: string, tags: string[]) => Promise<void>
   setPublic: (id: string, isPublic: boolean) => Promise<void>
+  /** Toggle encryption, replacing content with ciphertext/plaintext. */
+  applyEncryption: (
+    id: string,
+    isEncrypted: boolean,
+    content: string,
+  ) => Promise<void>
   remove: (id: string) => Promise<void>
   togglePin: (id: string) => Promise<void>
   /** Persist a note's pending change immediately (skip the debounce). */
@@ -173,6 +181,8 @@ export const useNotes = create<NotesState>((set, get) => {
       }
     },
 
+    discardIfEmpty,
+
     select: (id) => {
       const prev = get().currentId
       if (prev && prev !== id) {
@@ -201,6 +211,7 @@ export const useNotes = create<NotesState>((set, get) => {
         tags: [],
         isPublic: false,
         shareId: '',
+        isEncrypted: false,
         updated: Date.now(),
         draft: true,
       }
@@ -257,6 +268,26 @@ export const useNotes = create<NotesState>((set, get) => {
           ),
         }))
         toast.error('Không cập nhật được chia sẻ')
+      }
+    },
+
+    applyEncryption: async (id, isEncrypted, content) => {
+      const note = get().notes.find((n) => n.id === id)
+      if (!note || note.draft) return
+      cancelTimer(id) // avoid a plaintext autosave racing this write
+      const prev = { content: note.content, isEncrypted: note.isEncrypted }
+      set((s) => ({
+        notes: s.notes.map((n) =>
+          n.id === id ? { ...n, content, isEncrypted, updated: Date.now() } : n,
+        ),
+      }))
+      try {
+        await api.setNoteEncryption(dbId(note), isEncrypted, content)
+      } catch {
+        set((s) => ({
+          notes: s.notes.map((n) => (n.id === id ? { ...n, ...prev } : n)),
+        }))
+        toast.error('Không cập nhật được bảo mật')
       }
     },
 

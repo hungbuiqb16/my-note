@@ -17,10 +17,12 @@ import {
   Italic,
   List,
   ListChecks,
+  Lock,
   Pencil,
   Pin,
   Quote,
   Share2,
+  ShieldCheck,
   SquareCode,
   Trash2,
 } from 'lucide-react'
@@ -44,8 +46,10 @@ import {
 } from '@/components/ui/alert-dialog'
 import { TagInput } from '@/components/common/TagInput'
 import { ShareDialog } from '@/components/common/ShareDialog'
+import { SecureDialog } from '@/components/common/SecureDialog'
 import { useNotes } from '@/store/notes'
 import { useAuth } from '@/store/auth'
+import { useVault } from '@/store/vault'
 import { uploadNoteImage } from '@/services/storage'
 import { timeAgo } from '@/utils/time'
 import { textStats } from '@/utils/text'
@@ -94,18 +98,63 @@ export function Editor({ note, className, onBack }: EditorProps) {
   const togglePin = useNotes((s) => s.togglePin)
   const setTags = useNotes((s) => s.setTags)
   const userId = useAuth((s) => s.user?.id)
+  const vaultKey = useVault((s) => s.key)
+  const vaultEncrypt = useVault((s) => s.encrypt)
+  const vaultDecrypt = useVault((s) => s.decrypt)
 
   // Default to preview; a brand-new/empty note opens in write so you can type.
   const [mode, setMode] = useState<Mode>(() =>
     !note.title && !note.content ? 'write' : 'preview',
   )
   const [shareOpen, setShareOpen] = useState(false)
+  const [secureOpen, setSecureOpen] = useState(false)
   const [imgBusy, setImgBusy] = useState(false)
+  // Decrypted content for a secure note (null = not yet decrypted).
+  const [plain, setPlain] = useState<string | null>(null)
   const titleRef = useRef<HTMLInputElement>(null)
   const contentRef = useRef<HTMLTextAreaElement>(null)
   const imageRef = useRef<HTMLInputElement>(null)
   // Selection to restore after a toolbar edit re-renders the textarea.
   const pendingSel = useRef<{ start: number; end: number } | null>(null)
+  const encTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
+
+  const encrypted = note.isEncrypted
+  const locked = encrypted && !vaultKey
+  const decrypting = encrypted && !locked && plain === null
+  // The plaintext the editor works on (decrypted for secure notes).
+  const content = encrypted ? (plain ?? '') : note.content
+
+  // Decrypt a secure note once the vault is unlocked.
+  useEffect(() => {
+    if (!encrypted || !vaultKey) return
+    let alive = true
+    void vaultDecrypt(note.content)
+      .then((text) => alive && setPlain(text))
+      .catch(() => alive && setPlain(null))
+    return () => {
+      alive = false
+    }
+    // note.content is intentionally excluded (edits are tracked via `plain`).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [encrypted, vaultKey, note.id, vaultDecrypt])
+
+  // Cancel any pending encrypt when unmounting (e.g. switching notes).
+  useEffect(() => () => clearTimeout(encTimer.current), [])
+
+  // Persist a content change: plaintext directly, or debounced-encrypt if secure.
+  const writeContent = (next: string) => {
+    if (!encrypted) {
+      update({ content: next })
+      return
+    }
+    setPlain(next)
+    clearTimeout(encTimer.current)
+    encTimer.current = setTimeout(() => {
+      void vaultEncrypt(next)
+        .then((cipher) => update({ content: cipher }))
+        .catch(() => toast.error('Không mã hóa được nội dung'))
+    }, 300)
+  }
 
   // Auto-grow the content area to fit its text.
   useLayoutEffect(() => {
@@ -113,7 +162,7 @@ export function Editor({ note, className, onBack }: EditorProps) {
     if (!el) return
     el.style.height = 'auto'
     el.style.height = `${Math.max(el.scrollHeight, window.innerHeight * 0.55)}px`
-  }, [note.content, note.id, mode])
+  }, [content, note.id, mode])
 
   // Focus the title when opening a brand-new (empty) note.
   useEffect(() => {
@@ -130,34 +179,29 @@ export function Editor({ note, className, onBack }: EditorProps) {
     if (!el) return
     el.focus()
     el.setSelectionRange(sel.start, sel.end)
-  }, [note.content])
+  }, [content])
 
   const applyAction = (action: FormatAction) => {
     const el = contentRef.current
     if (!el) return
-    const res = applyFormat(
-      action,
-      note.content,
-      el.selectionStart,
-      el.selectionEnd,
-    )
+    const res = applyFormat(action, content, el.selectionStart, el.selectionEnd)
     pendingSel.current = { start: res.start, end: res.end }
-    update({ content: res.value })
+    writeContent(res.value)
   }
 
   const handleToggleTask = (index: number) => {
-    update({ content: toggleTaskAtIndex(note.content, index) })
+    writeContent(toggleTaskAtIndex(content, index))
   }
 
   // Insert text at the caret and place the caret `caretOffset` chars in.
   const insertAtCursor = (text: string, caretOffset = text.length) => {
     const el = contentRef.current
-    const start = el ? el.selectionStart : note.content.length
-    const end = el ? el.selectionEnd : note.content.length
-    const value = note.content.slice(0, start) + text + note.content.slice(end)
+    const start = el ? el.selectionStart : content.length
+    const end = el ? el.selectionEnd : content.length
+    const value = content.slice(0, start) + text + content.slice(end)
     const caret = start + caretOffset
     pendingSel.current = { start: caret, end: caret }
-    update({ content: value })
+    writeContent(value)
   }
 
   const insertImages = async (files: FileList | null) => {
@@ -181,7 +225,7 @@ export function Editor({ note, className, onBack }: EditorProps) {
     }
   }
 
-  const stats = useMemo(() => textStats(note.content), [note.content])
+  const stats = useMemo(() => textStats(content), [content])
 
   return (
     <main
@@ -230,6 +274,29 @@ export function Editor({ note, className, onBack }: EditorProps) {
               <span className="hidden sm:inline">Xem trước</span>
             </button>
           </div>
+
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setSecureOpen(true)}
+                className={cn(
+                  'rounded-xl text-muted-foreground',
+                  encrypted && 'text-primary',
+                )}
+              >
+                {encrypted ? (
+                  <ShieldCheck className="size-4" />
+                ) : (
+                  <Lock className="size-4" />
+                )}
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              {encrypted ? 'Ghi chú bảo mật' : 'Bảo mật ghi chú'}
+            </TooltipContent>
+          </Tooltip>
 
           <Tooltip>
             <TooltipTrigger asChild>
@@ -307,7 +374,7 @@ export function Editor({ note, className, onBack }: EditorProps) {
       </div>
 
       {/* Markdown formatting toolbar (write mode only) */}
-      {mode === 'write' && (
+      {mode === 'write' && !locked && !decrypting && (
         <div className="flex items-center gap-0.5 overflow-x-auto border-b border-black/5 px-3 py-1.5 md:px-8 dark:border-white/5">
           {FORMAT_BUTTONS.map(({ action, icon: Icon, label }) => (
             <Tooltip key={action}>
@@ -372,11 +439,26 @@ export function Editor({ note, className, onBack }: EditorProps) {
             />
           </div>
           <div className="grad-divider my-6 h-px w-16 rounded-full" />
-          {mode === 'write' ? (
+          {locked ? (
+            <div className="flex min-h-[40vh] flex-col items-center justify-center gap-3 text-center">
+              <ShieldCheck className="size-8 text-primary" />
+              <p className="text-sm text-muted-foreground">
+                Ghi chú này được mã hóa. Nhập mật khẩu bảo mật để xem.
+              </p>
+              <Button onClick={() => setSecureOpen(true)}>
+                <Lock />
+                Mở khóa
+              </Button>
+            </div>
+          ) : decrypting ? (
+            <div className="min-h-[40vh] text-sm text-muted-foreground">
+              Đang giải mã…
+            </div>
+          ) : mode === 'write' ? (
             <textarea
               ref={contentRef}
-              value={note.content}
-              onChange={(e) => update({ content: e.target.value })}
+              value={content}
+              onChange={(e) => writeContent(e.target.value)}
               onPaste={(e) => {
                 if (
                   Array.from(e.clipboardData.files).some((f) =>
@@ -412,7 +494,7 @@ export function Editor({ note, className, onBack }: EditorProps) {
               }
             >
               <MarkdownPreview
-                content={note.content}
+                content={content}
                 onToggleTask={handleToggleTask}
                 className="min-h-[55vh]"
               />
@@ -431,6 +513,11 @@ export function Editor({ note, className, onBack }: EditorProps) {
       </div>
 
       <ShareDialog note={note} open={shareOpen} onOpenChange={setShareOpen} />
+      <SecureDialog
+        note={note}
+        open={secureOpen}
+        onOpenChange={setSecureOpen}
+      />
     </main>
   )
 }

@@ -66,7 +66,15 @@ export function SecureDialog({ note, open, onOpenChange }: SecureDialogProps) {
 
   const handleUnlock = (e: React.FormEvent) => {
     e.preventDefault()
-    void run(() => unlock(pass))
+    void run(async () => {
+      await unlock(pass)
+      // Fulfil the intent: if opening on a not-yet-secure note, encrypt it now.
+      if (!note.isEncrypted) {
+        await applyEncryption(note.id, true, await encrypt(note.content))
+        toast.success('Đã bật bảo mật cho ghi chú')
+        onOpenChange(false)
+      }
+    })
   }
 
   const handleEncrypt = () =>
@@ -135,7 +143,9 @@ export function SecureDialog({ note, open, onOpenChange }: SecureDialogProps) {
         ) : !unlocked ? (
           <form onSubmit={handleUnlock} className="space-y-3">
             <p className="text-sm text-muted-foreground">
-              Nhập mật khẩu bảo mật để mở khóa.
+              {note.isEncrypted
+                ? 'Nhập mật khẩu bảo mật để mở khóa.'
+                : 'Bạn đã có mật khẩu bảo mật. Nhập để mã hóa ghi chú này.'}
             </p>
             <div className="space-y-1.5">
               <Label htmlFor="vaultUnlock">Mật khẩu bảo mật</Label>

@@ -3,6 +3,7 @@ import {
   ChevronLeft,
   ChevronRight,
   EllipsisVertical,
+  Menu,
   Pin,
   PinOff,
   Share2,
@@ -38,10 +39,10 @@ const PAGE_SIZE = 12
 interface AllNotesProps {
   className?: string
   onOpen: (id: string) => void
-  onBack: () => void
+  onOpenSidebar: () => void
 }
 
-export function AllNotes({ className, onOpen, onBack }: AllNotesProps) {
+export function AllNotes({ className, onOpen, onOpenSidebar }: AllNotesProps) {
   const notes = useNotes((s) => s.notes)
   const search = useNotes((s) => s.search)
   const activeTag = useNotes((s) => s.activeTag)
@@ -93,16 +94,16 @@ export function AllNotes({ className, onOpen, onBack }: AllNotesProps) {
       <div className="flex items-center justify-between gap-2 border-b border-black/5 px-4 py-3 md:px-8 dark:border-white/5">
         <button
           type="button"
-          onClick={onBack}
-          className="flex items-center gap-1 text-sm font-medium text-primary md:hidden"
+          onClick={onOpenSidebar}
+          aria-label="Mở menu"
+          className="text-muted-foreground md:hidden"
         >
-          <ChevronLeft className="size-4" />
-          Danh sách
+          <Menu className="size-5" />
         </button>
         <h2 className="font-display text-lg font-bold tracking-tight">
           Tất cả ghi chú
         </h2>
-        <span className="text-xs text-muted-foreground">{visible.length}</span>
+        <span className="text-xs text-muted-foreground">{visible.length} ghi chú</span>
       </div>
 
       <div className="flex-1 overflow-y-auto p-4 md:p-6">
@@ -162,9 +163,9 @@ export function AllNotes({ className, onOpen, onBack }: AllNotesProps) {
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button
-                        variant="secondary"
+                        variant="ghost"
                         size="icon-sm"
-                        className="rounded-lg shadow-sm"
+                        className="rounded-lg text-muted-foreground opacity-0 shadow-none transition-opacity group-focus-within:opacity-100 group-hover:opacity-100 focus-visible:border-transparent focus-visible:ring-0 aria-expanded:opacity-100"
                         aria-label="Tùy chọn"
                       >
                         <EllipsisVertical />

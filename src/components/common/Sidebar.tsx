@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useRef } from 'react'
 import { LayoutGrid, Moon, Plus, Search, Sparkles, Sun, X } from 'lucide-react'
-import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
@@ -8,29 +7,27 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
-import { NoteListItem } from '@/components/common/NoteListItem'
 import { UserMenu } from '@/components/common/UserMenu'
-import { selectAllTags, selectVisibleNotes, useNotes } from '@/store/notes'
+import { selectAllTags, useNotes } from '@/store/notes'
 import { cn } from '@/lib/utils'
 
 interface SidebarProps {
   className?: string
   theme: 'light' | 'dark'
-  /** Note to highlight in the list (null when e.g. the grid view is open). */
-  activeId: string | null
+  /** Whether the grid ("all notes") view is currently shown. */
+  gridActive: boolean
   onToggleTheme: () => void
   onCreate: () => void
-  onOpenNote: () => void
+  /** Navigate to the notes grid (also used after picking a filter). */
   onShowAll: () => void
 }
 
 export function Sidebar({
   className,
   theme,
-  activeId,
+  gridActive,
   onToggleTheme,
   onCreate,
-  onOpenNote,
   onShowAll,
 }: SidebarProps) {
   const searchRef = useRef<HTMLInputElement>(null)
@@ -39,12 +36,6 @@ export function Sidebar({
   const setSearch = useNotes((s) => s.setSearch)
   const activeTag = useNotes((s) => s.activeTag)
   const setActiveTag = useNotes((s) => s.setActiveTag)
-  const select = useNotes((s) => s.select)
-  const remove = useNotes((s) => s.remove)
-  const visible = useMemo(
-    () => selectVisibleNotes(notes, search, activeTag),
-    [notes, search, activeTag],
-  )
   const allTags = useMemo(() => selectAllTags(notes), [notes])
 
   useEffect(() => {
@@ -58,20 +49,16 @@ export function Sidebar({
     return () => document.removeEventListener('keydown', onKeyDown)
   }, [])
 
-  const handleSelect = (id: string) => {
-    select(id)
-    onOpenNote()
-  }
-
-  const handleDelete = (id: string) => {
-    void remove(id)
-    toast.success('Đã xóa ghi chú')
+  // Setting a filter jumps to the grid so results are visible.
+  const pickTag = (tag: string | null) => {
+    setActiveTag(tag)
+    onShowAll()
   }
 
   return (
     <aside
       className={cn(
-        'glass flex h-full w-full flex-shrink-0 flex-col border-r border-black/5 md:w-80 md:rounded-2xl md:border md:shadow-soft lg:w-[22rem] dark:border-white/5',
+        'glass flex h-full w-full flex-shrink-0 flex-col border-r border-black/5 md:w-72 md:rounded-2xl md:border md:shadow-soft lg:w-80 dark:border-white/5',
         className,
       )}
     >
@@ -85,38 +72,23 @@ export function Sidebar({
               h<span className="grad-text">note</span>
             </span>
           </h1>
-          <div className="flex items-center gap-1">
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={onShowAll}
-                  className="rounded-xl text-muted-foreground"
-                >
-                  <LayoutGrid className="size-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>Xem tất cả ghi chú</TooltipContent>
-            </Tooltip>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={onToggleTheme}
-                  className="rounded-xl text-muted-foreground"
-                >
-                  {theme === 'dark' ? (
-                    <Moon className="size-4" />
-                  ) : (
-                    <Sun className="size-4" />
-                  )}
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>Đổi giao diện sáng / tối</TooltipContent>
-            </Tooltip>
-          </div>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={onToggleTheme}
+                className="rounded-xl text-muted-foreground"
+              >
+                {theme === 'dark' ? (
+                  <Moon className="size-4" />
+                ) : (
+                  <Sun className="size-4" />
+                )}
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Đổi giao diện sáng / tối</TooltipContent>
+          </Tooltip>
         </div>
 
         <Button
@@ -133,6 +105,7 @@ export function Sidebar({
             ref={searchRef}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
+            onFocus={onShowAll}
             placeholder="Tìm kiếm…"
             className="h-auto rounded-xl py-2.5 pr-14 pl-9"
           />
@@ -154,65 +127,62 @@ export function Sidebar({
             </kbd>
           )}
         </div>
-
-        {allTags.length > 0 && (
-          <div className="mt-3 flex flex-wrap gap-1.5">
-            {activeTag && (
-              <button
-                type="button"
-                onClick={() => setActiveTag(null)}
-                className="rounded-full bg-black/[.05] px-2.5 py-0.5 text-xs font-medium text-muted-foreground hover:text-foreground dark:bg-white/[.06]"
-              >
-                Tất cả
-              </button>
-            )}
-            {allTags.map((tag) => (
-              <button
-                key={tag}
-                type="button"
-                onClick={() => setActiveTag(activeTag === tag ? null : tag)}
-                className={cn(
-                  'rounded-full px-2.5 py-0.5 text-xs font-medium transition-colors',
-                  activeTag === tag
-                    ? 'bg-primary text-primary-foreground'
-                    : 'bg-primary/10 text-primary hover:bg-primary/20',
-                )}
-              >
-                {tag}
-              </button>
-            ))}
-          </div>
-        )}
       </header>
 
-      <nav className="flex-1 overflow-x-hidden overflow-y-auto px-3 pb-3">
-        {visible.length === 0 ? (
-          <p className="px-4 py-10 text-center text-sm text-muted-foreground">
-            Không tìm thấy kết quả nào.
-          </p>
-        ) : (
-          <div className="space-y-1.5">
-            {visible.map((note) => (
-              <NoteListItem
-                key={note.id}
-                note={note}
-                active={note.id === activeId}
-                onClick={() => handleSelect(note.id)}
-                onDelete={() => handleDelete(note.id)}
-              />
-            ))}
+      <nav className="flex-1 overflow-y-auto px-3">
+        <button
+          type="button"
+          onClick={onShowAll}
+          className={cn(
+            'flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors',
+            gridActive
+              ? 'bg-primary/10 text-primary'
+              : 'text-foreground hover:bg-black/[.04] dark:hover:bg-white/[.06]',
+          )}
+        >
+          <LayoutGrid className="size-4" />
+          Tất cả ghi chú
+          <span className="ml-auto text-xs text-muted-foreground">
+            {notes.length}
+          </span>
+        </button>
+
+        {allTags.length > 0 && (
+          <div className="mt-4">
+            <p className="px-3 pb-1.5 text-xs font-medium text-muted-foreground">
+              Tags
+            </p>
+            <div className="flex flex-wrap gap-1.5 px-2">
+              {activeTag && (
+                <button
+                  type="button"
+                  onClick={() => pickTag(null)}
+                  className="rounded-full bg-black/[.05] px-2.5 py-0.5 text-xs font-medium text-muted-foreground hover:text-foreground dark:bg-white/[.06]"
+                >
+                  Tất cả
+                </button>
+              )}
+              {allTags.map((tag) => (
+                <button
+                  key={tag}
+                  type="button"
+                  onClick={() => pickTag(activeTag === tag ? null : tag)}
+                  className={cn(
+                    'rounded-full px-2.5 py-0.5 text-xs font-medium transition-colors',
+                    activeTag === tag
+                      ? 'bg-primary text-primary-foreground'
+                      : 'bg-primary/10 text-primary hover:bg-primary/20',
+                  )}
+                >
+                  {tag}
+                </button>
+              ))}
+            </div>
           </div>
         )}
       </nav>
 
-      <footer className="space-y-1 border-t border-black/5 px-3 py-2.5 dark:border-white/5">
-        <div className="flex items-center justify-between px-2 text-xs text-muted-foreground">
-          <span>{notes.length} ghi chú</span>
-          <span className="flex items-center gap-1.5">
-            <span className="size-1.5 rounded-full bg-emerald-500" /> Đã lưu tự
-            động
-          </span>
-        </div>
+      <footer className="border-t border-black/5 px-3 py-2.5 dark:border-white/5">
         <UserMenu />
       </footer>
     </aside>

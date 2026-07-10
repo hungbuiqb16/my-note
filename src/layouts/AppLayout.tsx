@@ -2,19 +2,19 @@ import { useEffect, useState } from 'react'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { Sidebar } from '@/components/common/Sidebar'
 import { Editor } from '@/components/common/Editor'
-import { EmptyState } from '@/components/common/EmptyState'
 import { AllNotes } from '@/components/common/AllNotes'
 import { useNotes } from '@/store/notes'
 import { useTheme } from '@/hooks/useTheme'
 import { useUnsavedGuard } from '@/hooks/useUnsavedGuard'
 
-type MobileView = 'list' | 'editor'
-type Mode = 'editor' | 'all'
+// On mobile only one pane is visible at a time.
+type MobileView = 'sidebar' | 'main'
+type Mode = 'all' | 'editor'
 
 export function AppLayout() {
   const { theme, toggle } = useTheme()
-  const [mobileView, setMobileView] = useState<MobileView>('list')
-  const [mode, setMode] = useState<Mode>('editor')
+  const [mobileView, setMobileView] = useState<MobileView>('main')
+  const [mode, setMode] = useState<Mode>('all')
   useUnsavedGuard()
 
   const currentId = useNotes((s) => s.currentId)
@@ -25,26 +25,23 @@ export function AppLayout() {
   const clear = useNotes((s) => s.clear)
   const currentNote = notes.find((n) => n.id === currentId) ?? null
 
+  const showingEditor = mode === 'editor' && currentNote !== null
+
   const handleCreate = () => {
     void create()
     setMode('editor')
-    setMobileView('editor')
+    setMobileView('main')
   }
 
-  // Open a note in the editor (from the sidebar list or the grid).
-  const openNote = () => {
-    setMode('editor')
-    setMobileView('editor')
-  }
-
-  const openFromGrid = (id: string) => {
+  const openNote = (id: string) => {
     select(id)
-    openNote()
+    setMode('editor')
+    setMobileView('main')
   }
 
-  const showAll = () => {
+  const showGrid = () => {
     setMode('all')
-    setMobileView('editor') // use the main pane on mobile
+    setMobileView('main')
   }
 
   // Load this user's notes on mount; clear them on logout (unmount).
@@ -65,35 +62,32 @@ export function AppLayout() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  const mainHidden = mobileView === 'list' ? 'hidden md:flex' : 'flex'
+  const mainClass = mobileView === 'main' ? 'flex' : 'hidden md:flex'
 
   return (
     <TooltipProvider delayDuration={300}>
       <div className="flex h-screen overflow-hidden p-0 md:gap-4 md:p-4">
         <Sidebar
-          className={mobileView === 'editor' ? 'hidden md:flex' : 'flex'}
+          className={mobileView === 'sidebar' ? 'flex' : 'hidden md:flex'}
           theme={theme}
-          activeId={mode === 'all' ? null : currentId}
+          gridActive={!showingEditor}
           onToggleTheme={toggle}
           onCreate={handleCreate}
-          onOpenNote={openNote}
-          onShowAll={showAll}
+          onShowAll={showGrid}
         />
-        {mode === 'all' ? (
-          <AllNotes
-            className={mainHidden}
-            onOpen={openFromGrid}
-            onBack={() => setMobileView('list')}
-          />
-        ) : currentNote ? (
+        {mode === 'editor' && currentNote ? (
           <Editor
             key={currentNote.id}
             note={currentNote}
-            className={mainHidden}
-            onBack={() => setMobileView('list')}
+            className={mainClass}
+            onBack={showGrid}
           />
         ) : (
-          <EmptyState className="hidden flex-1 md:flex" />
+          <AllNotes
+            className={mainClass}
+            onOpen={openNote}
+            onOpenSidebar={() => setMobileView('sidebar')}
+          />
         )}
       </div>
     </TooltipProvider>

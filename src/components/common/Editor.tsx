@@ -194,14 +194,11 @@ export function Editor({ note, className, onBack }: EditorProps) {
         <button
           type="button"
           onClick={onBack}
-          className="flex items-center gap-1 text-sm font-medium text-primary md:hidden"
+          className="flex items-center gap-1 text-sm font-medium text-primary"
         >
           <ChevronLeft className="size-4" />
-          Danh sách
+          Tất cả ghi chú
         </button>
-        <span className="hidden text-xs text-muted-foreground md:block">
-          Cập nhật {timeAgo(note.updated)}
-        </span>
 
         <div className="flex items-center gap-1.5">
           {/* Write / Preview toggle */}
@@ -430,6 +427,7 @@ export function Editor({ note, className, onBack }: EditorProps) {
         <span>{stats.chars} ký tự</span>
         <span className="text-muted-foreground/40">·</span>
         <span>{stats.readingMinutes} phút đọc</span>
+        <span className="ml-auto">Cập nhật {timeAgo(note.updated)}</span>
       </div>
 
       <ShareDialog note={note} open={shareOpen} onOpenChange={setShareOpen} />

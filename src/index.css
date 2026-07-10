@@ -1,0 +1,280 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+@import 'shadcn/tailwind.css';
+@plugin "@tailwindcss/typography";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --font-display: 'Space Grotesk', sans-serif;
+
+  --color-brand: var(--brand);
+  --color-brand-2: var(--brand-2);
+
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --color-foreground: var(--foreground);
+  --color-background: var(--background);
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  --shadow-soft:
+    0 1px 2px rgba(16, 18, 28, 0.04), 0 8px 24px rgba(16, 18, 28, 0.06);
+  --shadow-lift:
+    0 2px 4px rgba(16, 18, 28, 0.06), 0 16px 40px rgba(79, 107, 255, 0.14);
+}
+
+:root {
+  --radius: 0.75rem;
+
+  --background: #f3f4f8;
+  --foreground: #171a23;
+  --card: #ffffff;
+  --card-foreground: #171a23;
+  --popover: #ffffff;
+  --popover-foreground: #171a23;
+  --primary: #4f6bff;
+  --primary-foreground: #ffffff;
+  --secondary: #edeff5;
+  --secondary-foreground: #171a23;
+  --muted: #edeff5;
+  --muted-foreground: #7a8095;
+  --accent: #edeff5;
+  --accent-foreground: #171a23;
+  --destructive: #ef4444;
+  --border: rgba(16, 18, 28, 0.08);
+  --input: rgba(16, 18, 28, 0.1);
+  --ring: #4f6bff;
+
+  --brand: #4f6bff;
+  --brand-2: #9a5cff;
+
+  --sidebar: #ffffff;
+  --sidebar-foreground: #171a23;
+  --sidebar-primary: #4f6bff;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #edeff5;
+  --sidebar-accent-foreground: #171a23;
+  --sidebar-border: rgba(16, 18, 28, 0.08);
+  --sidebar-ring: #4f6bff;
+}
+
+.dark {
+  --background: #0c0e14;
+  --foreground: #e8eaf2;
+  --card: #151823;
+  --card-foreground: #e8eaf2;
+  --popover: #151823;
+  --popover-foreground: #e8eaf2;
+  --primary: #4f6bff;
+  --primary-foreground: #ffffff;
+  --secondary: #1e2230;
+  --secondary-foreground: #e8eaf2;
+  --muted: #1e2230;
+  --muted-foreground: #7d849c;
+  --accent: #1e2230;
+  --accent-foreground: #e8eaf2;
+  --destructive: #f87171;
+  --border: rgba(255, 255, 255, 0.08);
+  --input: rgba(255, 255, 255, 0.12);
+  --ring: #4f6bff;
+
+  --brand: #4f6bff;
+  --brand-2: #9a5cff;
+
+  --sidebar: #151823;
+  --sidebar-foreground: #e8eaf2;
+  --sidebar-primary: #4f6bff;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #1e2230;
+  --sidebar-accent-foreground: #e8eaf2;
+  --sidebar-border: rgba(255, 255, 255, 0.08);
+  --sidebar-ring: #4f6bff;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground antialiased;
+  }
+  html {
+    @apply font-sans;
+  }
+}
+
+@layer components {
+  /* Nền gradient mesh mờ — chiều sâu tinh tế */
+  .mesh {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background:
+      radial-gradient(
+        600px 400px at 12% 8%,
+        rgba(79, 107, 255, 0.1),
+        transparent 60%
+      ),
+      radial-gradient(
+        700px 500px at 88% 90%,
+        rgba(154, 92, 255, 0.09),
+        transparent 60%
+      );
+  }
+  .dark .mesh {
+    background:
+      radial-gradient(
+        600px 400px at 12% 8%,
+        rgba(79, 107, 255, 0.16),
+        transparent 60%
+      ),
+      radial-gradient(
+        700px 500px at 88% 90%,
+        rgba(154, 92, 255, 0.13),
+        transparent 60%
+      );
+  }
+
+  .glass {
+    background: rgba(255, 255, 255, 0.66);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+  }
+  .dark .glass {
+    background: rgba(21, 24, 35, 0.62);
+  }
+
+  .grad-text {
+    background: linear-gradient(90deg, var(--brand), var(--brand-2));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .grad-btn {
+    background: linear-gradient(120deg, var(--brand), #7e5bff);
+  }
+  .grad-btn:hover {
+    filter: brightness(1.08);
+  }
+  .grad-divider {
+    background: linear-gradient(90deg, var(--brand), var(--brand-2));
+  }
+
+  .note-item {
+    border: 1px solid transparent;
+  }
+  .note-item[data-active='true'] {
+    border-color: rgba(79, 107, 255, 0.35);
+    background: linear-gradient(
+      120deg,
+      rgba(79, 107, 255, 0.08),
+      rgba(154, 92, 255, 0.06)
+    );
+  }
+
+  kbd {
+    font-family: 'Inter', sans-serif;
+    font-size: 10.5px;
+    padding: 2px 5px;
+    border-radius: 5px;
+    border: 1px solid rgba(122, 128, 149, 0.3);
+    color: #7a8095;
+  }
+}
+
+::selection {
+  background: rgba(79, 107, 255, 0.22);
+}
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(122, 128, 149, 0.25);
+  border-radius: 99px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
+/* Markdown preview — map Tailwind Typography onto the app theme so it adapts
+   to light/dark automatically (the theme CSS vars flip on .dark). */
+.md-preview {
+  --tw-prose-body: var(--foreground);
+  --tw-prose-headings: var(--foreground);
+  --tw-prose-links: var(--primary);
+  --tw-prose-bold: var(--foreground);
+  --tw-prose-counters: var(--muted-foreground);
+  --tw-prose-bullets: var(--muted-foreground);
+  --tw-prose-hr: var(--border);
+  --tw-prose-quotes: var(--muted-foreground);
+  --tw-prose-quote-borders: var(--border);
+  --tw-prose-code: var(--foreground);
+  --tw-prose-pre-code: var(--foreground);
+  --tw-prose-pre-bg: var(--muted);
+  --tw-prose-th-borders: var(--border);
+  --tw-prose-td-borders: var(--border);
+}
+.md-preview :where(h1, h2, h3) {
+  font-family: var(--font-display);
+  letter-spacing: -0.01em;
+}
+.md-preview :where(code):not(pre code) {
+  background: var(--muted);
+  padding: 0.15em 0.4em;
+  border-radius: 0.35rem;
+  font-weight: 500;
+}
+.md-preview :where(code):not(pre code)::before,
+.md-preview :where(code):not(pre code)::after {
+  content: '';
+}
+.md-preview :where(ul):has(> li.task-list-item) {
+  list-style: none;
+  padding-left: 0;
+}
+.md-preview li.task-list-item {
+  padding-left: 0;
+}
+.md-preview li.task-list-item input[type='checkbox'] {
+  margin-right: 0.5em;
+  width: 1rem;
+  height: 1rem;
+  vertical-align: -2px;
+  accent-color: var(--primary);
+  cursor: pointer;
+}

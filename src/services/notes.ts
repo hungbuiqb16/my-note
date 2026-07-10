@@ -1,0 +1,67 @@
+import { supabase } from '@/services/supabase'
+import type { Note, NoteRow } from '@/types/note'
+
+function toNote(row: NoteRow): Note {
+  return {
+    id: row.id,
+    title: row.title,
+    content: row.content,
+    pinned: row.pinned,
+    tags: row.tags ?? [],
+    updated: Date.parse(row.updated_at),
+  }
+}
+
+/** All notes for the current user, pinned first then most-recent. */
+export async function fetchNotes(): Promise<Note[]> {
+  const { data, error } = await supabase
+    .from('notes')
+    .select('*')
+    .order('pinned', { ascending: false })
+    .order('updated_at', { ascending: false })
+  if (error) throw error
+  return (data as NoteRow[]).map(toNote)
+}
+
+type NotePatch = Partial<Pick<Note, 'title' | 'content' | 'pinned' | 'tags'>>
+
+/** Insert a note owned by the current user, optionally with initial fields. */
+export async function createNote(
+  userId: string,
+  fields: NotePatch = {},
+): Promise<Note> {
+  const { data, error } = await supabase
+    .from('notes')
+    .insert({
+      user_id: userId,
+      title: fields.title ?? '',
+      content: fields.content ?? '',
+      pinned: fields.pinned ?? false,
+      tags: fields.tags ?? [],
+    })
+    .select('*')
+    .single()
+  if (error) throw error
+  return toNote(data as NoteRow)
+}
+
+/** Persist a partial change; `updated_at` is bumped by a DB trigger. */
+export async function updateNote(id: string, patch: NotePatch): Promise<void> {
+  const { error } = await supabase.from('notes').update(patch).eq('id', id)
+  if (error) throw error
+}
+
+export async function deleteNote(id: string): Promise<void> {
+  const { error } = await supabase.from('notes').delete().eq('id', id)
+  if (error) throw error
+}
+
+/** All raw note rows for the current user, for data export. */
+export async function exportNotes(): Promise<NoteRow[]> {
+  const { data, error } = await supabase
+    .from('notes')
+    .select('*')
+    .order('created_at', { ascending: true })
+  if (error) throw error
+  return data as NoteRow[]
+}

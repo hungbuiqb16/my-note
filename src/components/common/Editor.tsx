@@ -1,4 +1,12 @@
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import {
+  lazy,
+  Suspense,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 import {
   Bold,
   ChevronLeft,
@@ -31,7 +39,6 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
-import { MarkdownPreview } from '@/components/common/MarkdownPreview'
 import { TagInput } from '@/components/common/TagInput'
 import { useNotes } from '@/store/notes'
 import { timeAgo } from '@/utils/time'
@@ -43,6 +50,14 @@ import {
 } from '@/utils/markdown'
 import { cn } from '@/lib/utils'
 import type { Note } from '@/types/note'
+
+// Loaded only when the preview is shown — keeps markdown + highlight.js
+// out of the initial bundle.
+const MarkdownPreview = lazy(() =>
+  import('@/components/common/MarkdownPreview').then((m) => ({
+    default: m.MarkdownPreview,
+  })),
+)
 
 type Mode = 'write' | 'preview'
 
@@ -282,11 +297,19 @@ export function Editor({ note, className, onBack }: EditorProps) {
               className="min-h-[55vh] w-full resize-none bg-transparent font-mono text-[14px] leading-relaxed placeholder:text-muted-foreground/50 focus:outline-none md:text-[15px]"
             />
           ) : (
-            <MarkdownPreview
-              content={note.content}
-              onToggleTask={handleToggleTask}
-              className="min-h-[55vh]"
-            />
+            <Suspense
+              fallback={
+                <div className="min-h-[55vh] text-sm text-muted-foreground">
+                  Đang tải…
+                </div>
+              }
+            >
+              <MarkdownPreview
+                content={note.content}
+                onToggleTask={handleToggleTask}
+                className="min-h-[55vh]"
+              />
+            </Suspense>
           )}
         </div>
       </div>

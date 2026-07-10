@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(wsl.exe -d Ubuntu-24.04 -- bash -lc 'export PATH=\"$HOME/.nvm/versions/node/v22.21.1/bin:$PATH\"; cd ~/personal/my-note && npm install react-router-dom 2>&1 | tail -3')",
+      "Bash(wsl.exe -d Ubuntu-24.04 -- bash -lc 'export PATH=\"$HOME/.nvm/versions/node/v22.21.1/bin:$PATH\"; cd ~/personal/my-note && npx prettier --write \"src/**/*.{ts,tsx}\" >/dev/null 2>&1; npm run build 2>&1 | grep -E \"error|Error|built|PublicNote|MarkdownPreview|index-\" | tail -12; echo \"=== LINT ===\"; npx eslint src >/tmp/l.txt 2>&1; echo \"lint_exit=$?\"; cat /tmp/l.txt')",
+      "Bash(wsl.exe -d Ubuntu-24.04 -- bash -lc 'fuser -k 5174/tcp 2>/dev/null; sleep 1; export PATH=\"$HOME/.nvm/versions/node/v22.21.1/bin:$PATH\"; cd ~/personal/my-note && \\(npm run dev >/tmp/vl.log 2>&1 &\\); sleep 6; echo \"root:\"; curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:5174/; echo \"share route:\"; curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:5174/share/abc; grep -iE \"error|fail|✘\" /tmp/vl.log | head')"
+    ]
+  }
+}

@@ -5,6 +5,10 @@ export interface Note {
   content: string
   pinned: boolean
   tags: string[]
+  /** Whether the note is shared publicly (read-only). */
+  isPublic: boolean
+  /** Unguessable id used in the public share URL. */
+  shareId: string
   /** Last-update time in ms (derived from `updated_at`). */
   updated: number
   /** Client-only: a new note not yet persisted (empty drafts are never saved). */
@@ -21,6 +25,8 @@ export interface NoteRow {
   content: string
   pinned: boolean
   tags: string[] | null
+  is_public: boolean
+  share_id: string
   created_at: string
   updated_at: string
 }

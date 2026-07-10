@@ -19,6 +19,7 @@ import {
   Pencil,
   Pin,
   Quote,
+  Share2,
   SquareCode,
   Trash2,
 } from 'lucide-react'
@@ -40,6 +41,7 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
 import { TagInput } from '@/components/common/TagInput'
+import { ShareDialog } from '@/components/common/ShareDialog'
 import { useNotes } from '@/store/notes'
 import { timeAgo } from '@/utils/time'
 import { textStats } from '@/utils/text'
@@ -92,6 +94,7 @@ export function Editor({ note, className, onBack }: EditorProps) {
   const [mode, setMode] = useState<Mode>(() =>
     !note.title && !note.content ? 'write' : 'preview',
   )
+  const [shareOpen, setShareOpen] = useState(false)
   const titleRef = useRef<HTMLInputElement>(null)
   const contentRef = useRef<HTMLTextAreaElement>(null)
   // Selection to restore after a toolbar edit re-renders the textarea.
@@ -191,6 +194,25 @@ export function Editor({ note, className, onBack }: EditorProps) {
               <span className="hidden sm:inline">Xem trước</span>
             </button>
           </div>
+
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setShareOpen(true)}
+                className={cn(
+                  'rounded-xl text-muted-foreground',
+                  note.isPublic && 'text-primary',
+                )}
+              >
+                <Share2 className="size-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              {note.isPublic ? 'Đang chia sẻ công khai' : 'Chia sẻ'}
+            </TooltipContent>
+          </Tooltip>
 
           <Tooltip>
             <TooltipTrigger asChild>
@@ -321,6 +343,8 @@ export function Editor({ note, className, onBack }: EditorProps) {
         <span className="text-muted-foreground/40">·</span>
         <span>{stats.readingMinutes} phút đọc</span>
       </div>
+
+      <ShareDialog note={note} open={shareOpen} onOpenChange={setShareOpen} />
     </main>
   )
 }

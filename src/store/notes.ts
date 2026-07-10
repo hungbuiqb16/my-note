@@ -18,6 +18,7 @@ interface NotesState {
   create: () => void
   update: (patch: Partial<Pick<Note, 'title' | 'content'>>) => void
   setTags: (id: string, tags: string[]) => Promise<void>
+  setPublic: (id: string, isPublic: boolean) => Promise<void>
   remove: (id: string) => Promise<void>
   togglePin: (id: string) => Promise<void>
   /** Persist a note's pending change immediately (skip the debounce). */
@@ -78,7 +79,15 @@ export const useNotes = create<NotesState>((set, get) => {
           // in-flight stay local and are flushed by the follow-up save.
           set((s) => ({
             notes: s.notes.map((n) =>
-              n.id === id ? { ...n, remoteId: row.id, draft: false } : n,
+              n.id === id
+                ? {
+                    ...n,
+                    remoteId: row.id,
+                    draft: false,
+                    shareId: row.shareId,
+                    isPublic: row.isPublic,
+                  }
+                : n,
             ),
           }))
           scheduleSave(id)
@@ -190,6 +199,8 @@ export const useNotes = create<NotesState>((set, get) => {
         content: '',
         pinned: false,
         tags: [],
+        isPublic: false,
+        shareId: '',
         updated: Date.now(),
         draft: true,
       }
@@ -224,6 +235,28 @@ export const useNotes = create<NotesState>((set, get) => {
           notes: s.notes.map((n) => (n.id === id ? { ...n, tags: prev } : n)),
         }))
         toast.error('Không cập nhật được tag')
+      }
+    },
+
+    setPublic: async (id, isPublic) => {
+      const note = get().notes.find((n) => n.id === id)
+      if (!note) return
+      if (note.draft) {
+        toast.error('Hãy nhập nội dung để lưu ghi chú trước khi chia sẻ')
+        return
+      }
+      set((s) => ({
+        notes: s.notes.map((n) => (n.id === id ? { ...n, isPublic } : n)),
+      }))
+      try {
+        await api.setNotePublic(dbId(note), isPublic)
+      } catch {
+        set((s) => ({
+          notes: s.notes.map((n) =>
+            n.id === id ? { ...n, isPublic: !isPublic } : n,
+          ),
+        }))
+        toast.error('Không cập nhật được chia sẻ')
       }
     },
 

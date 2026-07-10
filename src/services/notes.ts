@@ -8,7 +8,48 @@ function toNote(row: NoteRow): Note {
     content: row.content,
     pinned: row.pinned,
     tags: row.tags ?? [],
+    isPublic: row.is_public,
+    shareId: row.share_id,
     updated: Date.parse(row.updated_at),
+  }
+}
+
+/** Toggle a note's public (read-only share) state. */
+export async function setNotePublic(
+  id: string,
+  isPublic: boolean,
+): Promise<void> {
+  const { error } = await supabase
+    .from('notes')
+    .update({ is_public: isPublic })
+    .eq('id', id)
+  if (error) throw error
+}
+
+export interface PublicNote {
+  title: string
+  content: string
+  tags: string[]
+  updated: number
+}
+
+/** Fetch a publicly-shared note by its share id (anonymous-readable via RLS). */
+export async function fetchPublicNote(
+  shareId: string,
+): Promise<PublicNote | null> {
+  const { data, error } = await supabase
+    .from('notes')
+    .select('title, content, tags, updated_at')
+    .eq('share_id', shareId)
+    .eq('is_public', true)
+    .maybeSingle()
+  if (error) throw error
+  if (!data) return null
+  return {
+    title: data.title,
+    content: data.content,
+    tags: data.tags ?? [],
+    updated: Date.parse(data.updated_at),
   }
 }
 

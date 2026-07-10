@@ -73,7 +73,10 @@ export function Editor({ note, className, onBack }: EditorProps) {
   const togglePin = useNotes((s) => s.togglePin)
   const setTags = useNotes((s) => s.setTags)
 
-  const [mode, setMode] = useState<Mode>('write')
+  // Default to preview; a brand-new/empty note opens in write so you can type.
+  const [mode, setMode] = useState<Mode>(() =>
+    !note.title && !note.content ? 'write' : 'preview',
+  )
   const titleRef = useRef<HTMLInputElement>(null)
   const contentRef = useRef<HTMLTextAreaElement>(null)
   // Selection to restore after a toolbar edit re-renders the textarea.
@@ -258,6 +261,7 @@ export function Editor({ note, className, onBack }: EditorProps) {
             type="text"
             value={note.title}
             onChange={(e) => update({ title: e.target.value })}
+            readOnly={mode === 'preview'}
             placeholder="Tiêu đề ghi chú…"
             className="w-full bg-transparent font-display text-3xl font-bold tracking-tight placeholder:text-muted-foreground/50 focus:outline-none md:text-4xl"
           />
@@ -265,6 +269,7 @@ export function Editor({ note, className, onBack }: EditorProps) {
             <TagInput
               tags={note.tags}
               onChange={(tags) => setTags(note.id, tags)}
+              readOnly={mode === 'preview'}
             />
           </div>
           <div className="grad-divider my-6 h-px w-16 rounded-full" />

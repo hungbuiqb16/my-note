@@ -93,7 +93,7 @@ export function Login() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="ban@email.com"
+                placeholder="Email đã đăng ký"
               />
             </div>
             {mode !== 'reset' && (

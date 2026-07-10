@@ -454,7 +454,7 @@ export function PrivacyDialog({ open, onOpenChange }: DialogProps) {
               disabled={signingOut}
             >
               <LogOut />
-              {signingOut ? 'Đang xử lý…' : 'Đăng xuất'}
+              {signingOut ? 'Đang đăng xuất…' : 'Đăng xuất'}
             </Button>
           </div>
 

@@ -4,14 +4,32 @@ import { Hash, X } from 'lucide-react'
 interface TagInputProps {
   tags: string[]
   onChange: (tags: string[]) => void
+  /** Display tags without the ability to add/edit/remove. */
+  readOnly?: boolean
 }
 
 function normalize(raw: string) {
   return raw.trim().toLowerCase().replace(/\s+/g, '-')
 }
 
-export function TagInput({ tags, onChange }: TagInputProps) {
+export function TagInput({ tags, onChange, readOnly = false }: TagInputProps) {
   const [draft, setDraft] = useState('')
+
+  if (readOnly) {
+    if (tags.length === 0) return null
+    return (
+      <div className="flex flex-wrap items-center gap-1.5">
+        {tags.map((tag) => (
+          <span
+            key={tag}
+            className="inline-flex items-center rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary"
+          >
+            {tag}
+          </span>
+        ))}
+      </div>
+    )
+  }
 
   const addTag = (raw: string) => {
     const tag = normalize(raw)

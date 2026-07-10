@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef } from 'react'
 import { Moon, Plus, Search, Sparkles, Sun } from 'lucide-react'
+import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
@@ -35,6 +36,7 @@ export function Sidebar({
   const activeTag = useNotes((s) => s.activeTag)
   const setActiveTag = useNotes((s) => s.setActiveTag)
   const select = useNotes((s) => s.select)
+  const remove = useNotes((s) => s.remove)
   const visible = useMemo(
     () => selectVisibleNotes(notes, search, activeTag),
     [notes, search, activeTag],
@@ -55,6 +57,11 @@ export function Sidebar({
   const handleSelect = (id: string) => {
     select(id)
     onOpenNote()
+  }
+
+  const handleDelete = (id: string) => {
+    void remove(id)
+    toast.success('Đã xóa ghi chú')
   }
 
   return (
@@ -158,6 +165,7 @@ export function Sidebar({
                 note={note}
                 active={note.id === currentId}
                 onClick={() => handleSelect(note.id)}
+                onDelete={() => handleDelete(note.id)}
               />
             ))}
           </div>

@@ -1,17 +1,23 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import {
   ChevronLeft,
   ChevronRight,
+  Download,
   EllipsisVertical,
-  Lock,
+  Eraser,
   Menu,
   Pin,
   PinOff,
+  Settings,
   Share2,
   Trash2,
+  Upload,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { selectVisibleNotes, useNotes } from '@/store/notes'
+import { useAuth } from '@/store/auth'
+import { exportNotes, importNotes } from '@/services/notes'
+import { cleanupOrphanImages } from '@/services/storage'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -49,10 +55,108 @@ export function AllNotes({ className, onOpen, onOpenSidebar }: AllNotesProps) {
   const activeTag = useNotes((s) => s.activeTag)
   const togglePin = useNotes((s) => s.togglePin)
   const remove = useNotes((s) => s.remove)
+  const loadNotes = useNotes((s) => s.load)
+  const userId = useAuth((s) => s.user?.id)
   const visible = useMemo(
     () => selectVisibleNotes(notes, search, activeTag),
     [notes, search, activeTag],
   )
+
+  const importRef = useRef<HTMLInputElement>(null)
+  const [dataBusy, setDataBusy] = useState(false)
+
+  const handleExport = async () => {
+    setDataBusy(true)
+    try {
+      const rows = await exportNotes()
+      const json = JSON.stringify(rows, null, 2)
+      const filename = `hnote-export-${new Date().toISOString().slice(0, 10)}.json`
+
+      const picker = (
+        window as unknown as {
+          showSaveFilePicker?: (options?: {
+            suggestedName?: string
+            types?: { description?: string; accept: Record<string, string[]> }[]
+          }) => Promise<FileSystemFileHandle>
+        }
+      ).showSaveFilePicker
+
+      if (picker) {
+        // Native "Save As" dialog — lets the user choose where to save.
+        let handle: FileSystemFileHandle
+        try {
+          handle = await picker({
+            suggestedName: filename,
+            types: [
+              { description: 'JSON', accept: { 'application/json': ['.json'] } },
+            ],
+          })
+        } catch (err) {
+          // User cancelled the save dialog → do nothing.
+          if (err instanceof DOMException && err.name === 'AbortError') return
+          throw err
+        }
+        const writable = await handle.createWritable()
+        await writable.write(json)
+        await writable.close()
+      } else {
+        // Fallback: direct download (Firefox/Safari).
+        const blob = new Blob([json], { type: 'application/json' })
+        const url = URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = filename
+        a.click()
+        URL.revokeObjectURL(url)
+      }
+      toast.success(`Đã xuất ${rows.length} ghi chú`)
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Không xuất được dữ liệu')
+    } finally {
+      setDataBusy(false)
+    }
+  }
+
+  const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    e.target.value = ''
+    if (!file || !userId) return
+    setDataBusy(true)
+    try {
+      const parsed: unknown = JSON.parse(await file.text())
+      if (!Array.isArray(parsed)) throw new Error('Tệp JSON không hợp lệ')
+      const count = await importNotes(userId, parsed)
+      await loadNotes()
+      toast.success(
+        count > 0 ? `Đã nhập ${count} ghi chú` : 'Không có ghi chú hợp lệ',
+      )
+    } catch (err) {
+      toast.error(
+        err instanceof SyntaxError
+          ? 'Tệp JSON không hợp lệ'
+          : err instanceof Error
+            ? err.message
+            : 'Không nhập được dữ liệu',
+      )
+    } finally {
+      setDataBusy(false)
+    }
+  }
+
+  const handleCleanup = async () => {
+    if (!userId) return
+    setDataBusy(true)
+    try {
+      const removed = await cleanupOrphanImages(userId)
+      toast.success(
+        removed > 0 ? `Đã xóa ${removed} ảnh không dùng` : 'Không có ảnh thừa',
+      )
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Không dọn được ảnh')
+    } finally {
+      setDataBusy(false)
+    }
+  }
 
   const [shareId, setShareId] = useState<string | null>(null)
   const [deleteTarget, setDeleteTarget] = useState<Note | null>(null)
@@ -104,9 +208,41 @@ export function AllNotes({ className, onOpen, onOpenSidebar }: AllNotesProps) {
         <h2 className="font-display text-lg font-bold tracking-tight">
           Tất cả ghi chú
         </h2>
-        <span className="text-xs text-muted-foreground">
-          {visible.length} ghi chú
-        </span>
+
+        <input
+          ref={importRef}
+          type="file"
+          accept="application/json,.json"
+          hidden
+          onChange={handleImport}
+        />
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              disabled={dataBusy}
+              aria-label="Dữ liệu & cài đặt"
+              className="rounded-xl text-muted-foreground"
+            >
+              <Settings className="size-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={handleExport}>
+              <Download />
+              Xuất dữ liệu
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => importRef.current?.click()}>
+              <Upload />
+              Nhập dữ liệu
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={handleCleanup}>
+              <Eraser />
+              Dọn ảnh không dùng
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
       <div className="flex-1 overflow-y-auto p-4 md:p-6">
@@ -133,24 +269,13 @@ export function AllNotes({ className, onOpen, onOpenSidebar }: AllNotesProps) {
                     >
                       {note.title || 'Chưa có tiêu đề'}
                     </h3>
-                    <div className="mt-0.5 flex shrink-0 items-center gap-1">
-                      {note.isEncrypted && (
-                        <Lock className="size-3.5 text-primary" />
-                      )}
-                      {note.pinned && (
-                        <Pin className="size-3.5 fill-primary text-primary" />
-                      )}
-                    </div>
+                    {note.pinned && (
+                      <Pin className="mt-0.5 size-3.5 shrink-0 fill-primary text-primary" />
+                    )}
                   </div>
-                  {note.isEncrypted ? (
-                    <p className="mt-1 flex flex-1 items-center gap-1.5 text-[13px] text-muted-foreground italic">
-                      <Lock className="size-3.5" /> Nội dung được mã hóa
-                    </p>
-                  ) : (
-                    <p className="mt-1 line-clamp-3 flex-1 text-[13px] whitespace-pre-wrap text-muted-foreground">
-                      {note.content || 'Trống'}
-                    </p>
-                  )}
+                  <p className="mt-1 line-clamp-3 flex-1 text-[13px] whitespace-pre-wrap text-muted-foreground">
+                    {note.content || 'Trống'}
+                  </p>
                   {note.tags.length > 0 && (
                     <div className="mt-2 flex flex-wrap gap-1">
                       {note.tags.slice(0, 3).map((tag) => (
@@ -177,9 +302,9 @@ export function AllNotes({ className, onOpen, onOpenSidebar }: AllNotesProps) {
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button
-                        variant="ghost"
+                        variant="secondary"
                         size="icon-sm"
-                        className="rounded-lg text-muted-foreground opacity-0 shadow-none transition-opacity group-focus-within:opacity-100 group-hover:opacity-100 focus-visible:border-transparent focus-visible:ring-0 aria-expanded:opacity-100"
+                        className="rounded-lg shadow-sm"
                         aria-label="Tùy chọn"
                       >
                         <EllipsisVertical />
@@ -190,10 +315,7 @@ export function AllNotes({ className, onOpen, onOpenSidebar }: AllNotesProps) {
                         {note.pinned ? <PinOff /> : <Pin />}
                         {note.pinned ? 'Bỏ ghim' : 'Ghim'}
                       </DropdownMenuItem>
-                      <DropdownMenuItem
-                        disabled={note.isEncrypted}
-                        onClick={() => setShareId(note.id)}
-                      >
+                      <DropdownMenuItem onClick={() => setShareId(note.id)}>
                         <Share2 />
                         Chia sẻ
                       </DropdownMenuItem>

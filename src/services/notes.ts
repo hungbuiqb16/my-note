@@ -56,6 +56,40 @@ export async function deleteNote(id: string): Promise<void> {
   if (error) throw error
 }
 
+interface ImportItem {
+  title?: unknown
+  content?: unknown
+  pinned?: unknown
+  tags?: unknown
+}
+
+/**
+ * Bulk-insert notes owned by the current user (from an export file).
+ * Ignores ids/timestamps; skips items with no title and no content.
+ * Returns the number of notes actually inserted.
+ */
+export async function importNotes(
+  userId: string,
+  items: ImportItem[],
+): Promise<number> {
+  const rows = items
+    .map((it) => ({
+      user_id: userId,
+      title: typeof it.title === 'string' ? it.title : '',
+      content: typeof it.content === 'string' ? it.content : '',
+      pinned: Boolean(it.pinned),
+      tags: Array.isArray(it.tags)
+        ? it.tags.filter((t): t is string => typeof t === 'string')
+        : [],
+    }))
+    .filter((r) => r.title.trim() !== '' || r.content.trim() !== '')
+
+  if (rows.length === 0) return 0
+  const { error } = await supabase.from('notes').insert(rows)
+  if (error) throw error
+  return rows.length
+}
+
 /** All raw note rows for the current user, for data export. */
 export async function exportNotes(): Promise<NoteRow[]> {
   const { data, error } = await supabase

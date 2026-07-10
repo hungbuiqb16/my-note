@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef } from 'react'
-import { Moon, Plus, Search, Sparkles, Sun } from 'lucide-react'
+import { LayoutGrid, Moon, Plus, Search, Sparkles, Sun, X } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -19,6 +19,7 @@ interface SidebarProps {
   onToggleTheme: () => void
   onCreate: () => void
   onOpenNote: () => void
+  onShowAll: () => void
 }
 
 export function Sidebar({
@@ -27,6 +28,7 @@ export function Sidebar({
   onToggleTheme,
   onCreate,
   onOpenNote,
+  onShowAll,
 }: SidebarProps) {
   const searchRef = useRef<HTMLInputElement>(null)
   const notes = useNotes((s) => s.notes)
@@ -78,26 +80,41 @@ export function Sidebar({
               <Sparkles className="size-4" />
             </span>
             <span>
-              note<span className="grad-text">flow</span>
+              h<span className="grad-text">note</span>
             </span>
           </h1>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={onToggleTheme}
-                className="rounded-xl text-muted-foreground"
-              >
-                {theme === 'dark' ? (
-                  <Moon className="size-4" />
-                ) : (
-                  <Sun className="size-4" />
-                )}
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>Đổi giao diện sáng / tối</TooltipContent>
-          </Tooltip>
+          <div className="flex items-center gap-1">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={onShowAll}
+                  className="rounded-xl text-muted-foreground"
+                >
+                  <LayoutGrid className="size-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Xem tất cả ghi chú</TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={onToggleTheme}
+                  className="rounded-xl text-muted-foreground"
+                >
+                  {theme === 'dark' ? (
+                    <Moon className="size-4" />
+                  ) : (
+                    <Sun className="size-4" />
+                  )}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Đổi giao diện sáng / tối</TooltipContent>
+            </Tooltip>
+          </div>
         </div>
 
         <Button
@@ -117,9 +134,23 @@ export function Sidebar({
             placeholder="Tìm kiếm…"
             className="h-auto rounded-xl py-2.5 pr-14 pl-9"
           />
-          <kbd className="absolute top-1/2 right-3 hidden -translate-y-1/2 md:block">
-            ⌘K
-          </kbd>
+          {search ? (
+            <button
+              type="button"
+              onClick={() => {
+                setSearch('')
+                searchRef.current?.focus()
+              }}
+              aria-label="Xóa tìm kiếm"
+              className="absolute top-1/2 right-2.5 grid size-6 -translate-y-1/2 place-items-center rounded-full text-muted-foreground transition-colors hover:bg-black/[.06] hover:text-foreground dark:hover:bg-white/[.08]"
+            >
+              <X className="size-3.5" />
+            </button>
+          ) : (
+            <kbd className="absolute top-1/2 right-3 hidden -translate-y-1/2 md:block">
+              ⌘K
+            </kbd>
+          )}
         </div>
 
         {allTags.length > 0 && (

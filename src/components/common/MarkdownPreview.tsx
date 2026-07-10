@@ -1,5 +1,6 @@
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
+import rehypeHighlight from 'rehype-highlight'
 import { cn } from '@/lib/utils'
 
 interface MarkdownPreviewProps {
@@ -21,6 +22,7 @@ export function MarkdownPreview({
     <div className={cn('md-preview prose prose-sm max-w-none', className)}>
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
+        rehypePlugins={[[rehypeHighlight, { ignoreMissing: true }]]}
         components={{
           input: ({ type, checked }) => {
             if (type !== 'checkbox') return null

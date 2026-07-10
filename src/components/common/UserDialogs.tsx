@@ -2,7 +2,8 @@ import { useRef, useState } from 'react'
 import { Download, LogOut, Trash2, Upload } from 'lucide-react'
 import { toast } from 'sonner'
 import { useAuth } from '@/store/auth'
-import { exportNotes } from '@/services/notes'
+import { useNotes } from '@/store/notes'
+import { exportNotes, importNotes } from '@/services/notes'
 import { uploadAvatar } from '@/services/storage'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
@@ -90,7 +91,17 @@ export function ProfileDialog({ open, onOpenChange }: DialogProps) {
           <dd className="col-span-2 truncate">{email}</dd>
           <dt className="text-muted-foreground">Xác nhận</dt>
           <dd className="col-span-2">
-            {user?.email_confirmed_at ? 'Đã xác nhận' : 'Chưa xác nhận'}
+            {user?.email_confirmed_at ? (
+              <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/15 px-2 py-0.5 text-xs font-medium text-emerald-600 dark:text-emerald-400">
+                <span className="size-1.5 rounded-full bg-emerald-500" />
+                Đã xác nhận
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/15 px-2 py-0.5 text-xs font-medium text-amber-600 dark:text-amber-400">
+                <span className="size-1.5 rounded-full bg-amber-500" />
+                Chưa xác nhận
+              </span>
+            )}
           </dd>
           <dt className="text-muted-foreground">Ngày tạo</dt>
           <dd className="col-span-2">{created}</dd>
@@ -362,11 +373,40 @@ function AccountSettingsForm() {
 
 /** Data export, global sign-out, and account deletion. */
 export function PrivacyDialog({ open, onOpenChange }: DialogProps) {
+  const user = useAuth((s) => s.user)
   const signOutAll = useAuth((s) => s.signOutAll)
   const deleteAccount = useAuth((s) => s.deleteAccount)
+  const importRef = useRef<HTMLInputElement>(null)
   const [exporting, setExporting] = useState(false)
+  const [importing, setImporting] = useState(false)
   const [signingOut, setSigningOut] = useState(false)
   const [deleting, setDeleting] = useState(false)
+
+  const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    e.target.value = '' // allow re-selecting the same file
+    if (!file || !user) return
+    setImporting(true)
+    try {
+      const parsed: unknown = JSON.parse(await file.text())
+      if (!Array.isArray(parsed)) {
+        throw new Error('Tệp không hợp lệ (cần một mảng JSON)')
+      }
+      const count = await importNotes(user.id, parsed)
+      await useNotes.getState().load()
+      toast.success(
+        count > 0
+          ? `Đã nhập ${count} ghi chú`
+          : 'Không có ghi chú hợp lệ để nhập',
+      )
+    } catch (err) {
+      toast.error(
+        err instanceof SyntaxError ? 'Tệp JSON không hợp lệ' : errMsg(err),
+      )
+    } finally {
+      setImporting(false)
+    }
+  }
 
   const handleExport = async () => {
     setExporting(true)
@@ -378,7 +418,7 @@ export function PrivacyDialog({ open, onOpenChange }: DialogProps) {
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
-      a.download = `noteflow-export-${new Date().toISOString().slice(0, 10)}.json`
+      a.download = `hnote-export-${new Date().toISOString().slice(0, 10)}.json`
       a.click()
       URL.revokeObjectURL(url)
       toast.success(`Đã xuất ${rows.length} ghi chú`)
@@ -436,6 +476,32 @@ export function PrivacyDialog({ open, onOpenChange }: DialogProps) {
             >
               <Download />
               {exporting ? 'Đang xuất…' : 'Tải xuống'}
+            </Button>
+          </div>
+
+          <Separator />
+
+          <div className="flex items-center justify-between gap-4">
+            <div className="min-w-0">
+              <p className="text-sm font-medium">Nhập dữ liệu</p>
+              <p className="text-xs text-muted-foreground">
+                Nhập ghi chú từ tệp JSON đã xuất.
+              </p>
+            </div>
+            <input
+              ref={importRef}
+              type="file"
+              accept="application/json,.json"
+              hidden
+              onChange={handleImport}
+            />
+            <Button
+              variant="secondary"
+              onClick={() => importRef.current?.click()}
+              disabled={importing}
+            >
+              <Upload />
+              {importing ? 'Đang nhập…' : 'Chọn tệp'}
             </Button>
           </div>
 

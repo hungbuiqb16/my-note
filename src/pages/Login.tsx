@@ -71,12 +71,12 @@ export function Login() {
       <VantaBackground />
       <Card className="glass w-full max-w-sm border-black/5 shadow-lift dark:border-white/5">
         <CardHeader className="items-center text-center">
-          <div className="mb-2 flex items-center gap-2 font-display text-2xl font-bold tracking-tight">
+          <div className="mb-2 flex items-center justify-center gap-2 font-display text-2xl font-bold tracking-tight">
             <span className="grad-btn grid size-8 place-items-center rounded-lg text-white shadow-lift">
               <Sparkles className="size-4" />
             </span>
             <span>
-              note<span className="grad-text">flow</span>
+              h<span className="grad-text">note</span>
             </span>
           </div>
           <CardTitle className="text-lg">{title}</CardTitle>
@@ -129,7 +129,7 @@ export function Login() {
               disabled={loading}
               className="grad-btn h-auto w-full rounded-xl py-2.5 font-semibold text-white shadow-lift"
             >
-              {loading ? 'Đang xử lý…' : submitLabel}
+              {loading ? 'Đang đăng nhập…' : submitLabel}
             </Button>
           </form>
 

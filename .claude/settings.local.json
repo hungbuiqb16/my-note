@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(wsl.exe -d Ubuntu-24.04 -- bash -lc 'export PATH=\"$HOME/.nvm/versions/node/v22.21.1/bin:$PATH\"; cd ~/personal/my-note && npm run build 2>&1 | grep -E \"error|Error|built\" | tail -3; npx eslint src >/tmp/l.txt 2>&1; echo \"lint_exit=$?\"; cat /tmp/l.txt')"
+    ]
+  }
+}

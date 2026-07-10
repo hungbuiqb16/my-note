@@ -166,10 +166,14 @@ export const useNotes = create<NotesState>((set, get) => {
 
     select: (id) => {
       const prev = get().currentId
-      if (prev !== id && prev) {
+      if (prev && prev !== id) {
         discardIfEmpty(prev)
-        cancelTimer(prev)
-        persist(prev) // save the note we're leaving right away
+        // Only write the note we're leaving if it has an unsaved change —
+        // otherwise switching notes would needlessly bump its updated_at.
+        if (saveTimers.has(prev)) {
+          cancelTimer(prev)
+          persist(prev)
+        }
       }
       set({ currentId: id })
     },

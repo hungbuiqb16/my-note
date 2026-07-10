@@ -37,11 +37,18 @@ export function Login() {
         toast.success('Đăng ký thành công. Kiểm tra email nếu cần xác nhận.')
       } else {
         await resetPassword(email)
-        toast.success('Đã gửi liên kết đặt lại mật khẩu tới email của bạn.')
+        toast.success(
+          'Nếu email đã đăng ký, liên kết đặt lại mật khẩu đã được gửi. Vui lòng kiểm tra hộp thư.',
+        )
         setMode('signin')
       }
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Có lỗi xảy ra')
+      const message = err instanceof Error ? err.message : ''
+      if (mode === 'signin' && /invalid login credentials/i.test(message)) {
+        toast.error('Email hoặc mật khẩu không đúng')
+      } else {
+        toast.error(message || 'Có lỗi xảy ra')
+      }
     } finally {
       setLoading(false)
     }

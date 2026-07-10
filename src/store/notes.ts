@@ -283,6 +283,15 @@ export const useNotes = create<NotesState>((set, get) => {
       }))
       try {
         await api.setNoteEncryption(dbId(note), isEncrypted, content)
+        // An encrypted note must not stay publicly shared (would leak ciphertext).
+        if (isEncrypted && note.isPublic) {
+          await api.setNotePublic(dbId(note), false)
+          set((s) => ({
+            notes: s.notes.map((n) =>
+              n.id === id ? { ...n, isPublic: false } : n,
+            ),
+          }))
+        }
       } catch {
         set((s) => ({
           notes: s.notes.map((n) => (n.id === id ? { ...n, ...prev } : n)),

@@ -303,17 +303,28 @@ export function Editor({ note, className, onBack }: EditorProps) {
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={() => setShareOpen(true)}
+                onClick={() => {
+                  if (encrypted) {
+                    toast.error('Không thể chia sẻ ghi chú đã mã hóa')
+                    return
+                  }
+                  setShareOpen(true)
+                }}
                 className={cn(
                   'rounded-xl text-muted-foreground',
                   note.isPublic && 'text-primary',
+                  encrypted && 'opacity-40',
                 )}
               >
                 <Share2 className="size-4" />
               </Button>
             </TooltipTrigger>
             <TooltipContent>
-              {note.isPublic ? 'Đang chia sẻ công khai' : 'Chia sẻ'}
+              {encrypted
+                ? 'Ghi chú mã hóa không thể chia sẻ'
+                : note.isPublic
+                  ? 'Đang chia sẻ công khai'
+                  : 'Chia sẻ'}
             </TooltipContent>
           </Tooltip>
 

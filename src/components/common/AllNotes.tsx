@@ -190,7 +190,10 @@ export function AllNotes({ className, onOpen, onOpenSidebar }: AllNotesProps) {
                         {note.pinned ? <PinOff /> : <Pin />}
                         {note.pinned ? 'Bỏ ghim' : 'Ghim'}
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => setShareId(note.id)}>
+                      <DropdownMenuItem
+                        disabled={note.isEncrypted}
+                        onClick={() => setShareId(note.id)}
+                      >
                         <Share2 />
                         Chia sẻ
                       </DropdownMenuItem>

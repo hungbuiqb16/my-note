@@ -73,6 +73,7 @@ export function AppLayout() {
         <Sidebar
           className={mobileView === 'editor' ? 'hidden md:flex' : 'flex'}
           theme={theme}
+          activeId={mode === 'all' ? null : currentId}
           onToggleTheme={toggle}
           onCreate={handleCreate}
           onOpenNote={openNote}

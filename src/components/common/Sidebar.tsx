@@ -16,6 +16,8 @@ import { cn } from '@/lib/utils'
 interface SidebarProps {
   className?: string
   theme: 'light' | 'dark'
+  /** Note to highlight in the list (null when e.g. the grid view is open). */
+  activeId: string | null
   onToggleTheme: () => void
   onCreate: () => void
   onOpenNote: () => void
@@ -25,6 +27,7 @@ interface SidebarProps {
 export function Sidebar({
   className,
   theme,
+  activeId,
   onToggleTheme,
   onCreate,
   onOpenNote,
@@ -32,7 +35,6 @@ export function Sidebar({
 }: SidebarProps) {
   const searchRef = useRef<HTMLInputElement>(null)
   const notes = useNotes((s) => s.notes)
-  const currentId = useNotes((s) => s.currentId)
   const search = useNotes((s) => s.search)
   const setSearch = useNotes((s) => s.setSearch)
   const activeTag = useNotes((s) => s.activeTag)
@@ -194,7 +196,7 @@ export function Sidebar({
               <NoteListItem
                 key={note.id}
                 note={note}
-                active={note.id === currentId}
+                active={note.id === activeId}
                 onClick={() => handleSelect(note.id)}
                 onDelete={() => handleDelete(note.id)}
               />

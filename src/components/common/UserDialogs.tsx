@@ -1,10 +1,10 @@
 import { useRef, useState } from 'react'
-import { Download, LogOut, Trash2, Upload } from 'lucide-react'
+import { Download, Eraser, LogOut, Trash2, Upload } from 'lucide-react'
 import { toast } from 'sonner'
 import { useAuth } from '@/store/auth'
 import { useNotes } from '@/store/notes'
 import { exportNotes, importNotes } from '@/services/notes'
-import { uploadAvatar } from '@/services/storage'
+import { cleanupOrphanImages, uploadAvatar } from '@/services/storage'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -379,8 +379,24 @@ export function PrivacyDialog({ open, onOpenChange }: DialogProps) {
   const importRef = useRef<HTMLInputElement>(null)
   const [exporting, setExporting] = useState(false)
   const [importing, setImporting] = useState(false)
+  const [cleaning, setCleaning] = useState(false)
   const [signingOut, setSigningOut] = useState(false)
   const [deleting, setDeleting] = useState(false)
+
+  const handleCleanup = async () => {
+    if (!user) return
+    setCleaning(true)
+    try {
+      const removed = await cleanupOrphanImages(user.id)
+      toast.success(
+        removed > 0 ? `Đã xóa ${removed} ảnh không dùng` : 'Không có ảnh thừa',
+      )
+    } catch (err) {
+      toast.error(errMsg(err))
+    } finally {
+      setCleaning(false)
+    }
+  }
 
   const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -502,6 +518,25 @@ export function PrivacyDialog({ open, onOpenChange }: DialogProps) {
             >
               <Upload />
               {importing ? 'Đang nhập…' : 'Chọn tệp'}
+            </Button>
+          </div>
+
+          <Separator />
+
+          <div className="flex items-center justify-between gap-4">
+            <div className="min-w-0">
+              <p className="text-sm font-medium">Dọn ảnh không dùng</p>
+              <p className="text-xs text-muted-foreground">
+                Xóa ảnh đã tải lên nhưng không còn trong ghi chú nào.
+              </p>
+            </div>
+            <Button
+              variant="secondary"
+              onClick={handleCleanup}
+              disabled={cleaning}
+            >
+              <Eraser />
+              {cleaning ? 'Đang dọn…' : 'Dọn'}
             </Button>
           </div>
 

@@ -13,6 +13,7 @@ import {
   Code,
   Eye,
   Heading,
+  Image as ImageIcon,
   Italic,
   List,
   ListChecks,
@@ -23,6 +24,7 @@ import {
   SquareCode,
   Trash2,
 } from 'lucide-react'
+import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import {
   Tooltip,
@@ -43,6 +45,8 @@ import {
 import { TagInput } from '@/components/common/TagInput'
 import { ShareDialog } from '@/components/common/ShareDialog'
 import { useNotes } from '@/store/notes'
+import { useAuth } from '@/store/auth'
+import { uploadNoteImage } from '@/services/storage'
 import { timeAgo } from '@/utils/time'
 import { textStats } from '@/utils/text'
 import {
@@ -89,14 +93,17 @@ export function Editor({ note, className, onBack }: EditorProps) {
   const remove = useNotes((s) => s.remove)
   const togglePin = useNotes((s) => s.togglePin)
   const setTags = useNotes((s) => s.setTags)
+  const userId = useAuth((s) => s.user?.id)
 
   // Default to preview; a brand-new/empty note opens in write so you can type.
   const [mode, setMode] = useState<Mode>(() =>
     !note.title && !note.content ? 'write' : 'preview',
   )
   const [shareOpen, setShareOpen] = useState(false)
+  const [imgBusy, setImgBusy] = useState(false)
   const titleRef = useRef<HTMLInputElement>(null)
   const contentRef = useRef<HTMLTextAreaElement>(null)
+  const imageRef = useRef<HTMLInputElement>(null)
   // Selection to restore after a toolbar edit re-renders the textarea.
   const pendingSel = useRef<{ start: number; end: number } | null>(null)
 
@@ -140,6 +147,38 @@ export function Editor({ note, className, onBack }: EditorProps) {
 
   const handleToggleTask = (index: number) => {
     update({ content: toggleTaskAtIndex(note.content, index) })
+  }
+
+  // Insert text at the caret and place the caret `caretOffset` chars in.
+  const insertAtCursor = (text: string, caretOffset = text.length) => {
+    const el = contentRef.current
+    const start = el ? el.selectionStart : note.content.length
+    const end = el ? el.selectionEnd : note.content.length
+    const value = note.content.slice(0, start) + text + note.content.slice(end)
+    const caret = start + caretOffset
+    pendingSel.current = { start: caret, end: caret }
+    update({ content: value })
+  }
+
+  const insertImages = async (files: FileList | null) => {
+    const file = files
+      ? Array.from(files).find((f) => f.type.startsWith('image/'))
+      : undefined
+    if (!file || !userId) return
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('Ảnh tối đa 5MB')
+      return
+    }
+    setImgBusy(true)
+    try {
+      const url = await uploadNoteImage(userId, file)
+      insertAtCursor(`![](${url})`, 2) // caret inside the [] for alt text
+      toast.success('Đã chèn ảnh')
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Không tải được ảnh')
+    } finally {
+      setImgBusy(false)
+    }
   }
 
   const stats = useMemo(() => textStats(note.content), [note.content])
@@ -288,6 +327,32 @@ export function Editor({ note, className, onBack }: EditorProps) {
               <TooltipContent>{label}</TooltipContent>
             </Tooltip>
           ))}
+
+          <span className="mx-1 h-4 w-px shrink-0 bg-border" />
+          <input
+            ref={imageRef}
+            type="file"
+            accept="image/*"
+            hidden
+            onChange={(e) => {
+              void insertImages(e.target.files)
+              e.target.value = ''
+            }}
+          />
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                disabled={imgBusy}
+                onClick={() => imageRef.current?.click()}
+                className="shrink-0 rounded-lg text-muted-foreground"
+              >
+                <ImageIcon className="size-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Chèn ảnh (hoặc dán / kéo-thả)</TooltipContent>
+          </Tooltip>
         </div>
       )}
 
@@ -315,7 +380,30 @@ export function Editor({ note, className, onBack }: EditorProps) {
               ref={contentRef}
               value={note.content}
               onChange={(e) => update({ content: e.target.value })}
-              placeholder="Bắt đầu viết… (hỗ trợ Markdown)"
+              onPaste={(e) => {
+                if (
+                  Array.from(e.clipboardData.files).some((f) =>
+                    f.type.startsWith('image/'),
+                  )
+                ) {
+                  e.preventDefault()
+                  void insertImages(e.clipboardData.files)
+                }
+              }}
+              onDragOver={(e) => {
+                if (e.dataTransfer.types.includes('Files')) e.preventDefault()
+              }}
+              onDrop={(e) => {
+                if (
+                  Array.from(e.dataTransfer.files).some((f) =>
+                    f.type.startsWith('image/'),
+                  )
+                ) {
+                  e.preventDefault()
+                  void insertImages(e.dataTransfer.files)
+                }
+              }}
+              placeholder="Bắt đầu viết… (hỗ trợ Markdown, dán/kéo-thả ảnh)"
               className="min-h-[55vh] w-full resize-none bg-transparent font-mono text-[14px] leading-relaxed placeholder:text-muted-foreground/50 focus:outline-none md:text-[15px]"
             />
           ) : (

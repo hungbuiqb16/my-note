@@ -11,6 +11,8 @@ interface AuthState {
   init: () => () => void
   signIn: (email: string, password: string) => Promise<void>
   signUp: (email: string, password: string) => Promise<void>
+  /** Start an OAuth sign-in flow (redirects to the provider, then back). */
+  signInWithProvider: (provider: 'google' | 'github') => Promise<void>
   signOut: () => Promise<void>
   /** Revoke every session for this user, everywhere. */
   signOutAll: () => Promise<void>
@@ -65,6 +67,16 @@ export const useAuth = create<AuthState>((set) => ({
       // Confirmation link returns to the current app origin (must be allowed
       // in Supabase → Auth → URL Configuration → Redirect URLs).
       options: { emailRedirectTo: window.location.origin },
+    })
+    if (error) throw error
+  },
+
+  signInWithProvider: async (provider) => {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider,
+      // Return to the app origin (must be in Supabase → Auth → URL
+      // Configuration → Redirect URLs).
+      options: { redirectTo: window.location.origin },
     })
     if (error) throw error
   },

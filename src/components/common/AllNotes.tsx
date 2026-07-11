@@ -151,7 +151,7 @@ function NoteCard({
           touchAction: 'pan-y',
           background: dx > 0 ? 'var(--card)' : undefined,
         }}
-        className="relative flex h-44 w-full flex-col rounded-xl border border-black/5 bg-card p-4 text-left transition-all select-none hover:-translate-y-[3px] hover:border-brand-2/60 hover:shadow-lift focus-visible:ring-2 focus-visible:ring-primary dark:border-white/10 dark:bg-white/[.03] dark:hover:border-brand-2/60"
+        className="relative flex h-44 w-full flex-col rounded-xl border border-black/10 bg-card p-4 text-left shadow-soft transition-all select-none hover:-translate-y-[3px] hover:border-brand-2/60 hover:shadow-lift focus-visible:ring-2 focus-visible:ring-primary dark:border-white/10 dark:bg-white/[.03] dark:hover:border-brand-2/60"
       >
         <div className="flex items-start justify-between gap-2">
           <h3
@@ -269,7 +269,7 @@ function TrashCard({ note, onOpen, onRestore, onRequestPurge }: TrashCardProps) 
       <button
         type="button"
         onClick={() => onOpen(note)}
-        className="relative flex h-44 w-full flex-col rounded-xl border border-black/5 bg-card p-4 text-left transition-all hover:-translate-y-[3px] hover:border-brand-2/60 hover:shadow-lift focus-visible:ring-2 focus-visible:ring-primary dark:border-white/10 dark:bg-white/[.03] dark:hover:border-brand-2/60"
+        className="relative flex h-44 w-full flex-col rounded-xl border border-black/10 bg-card p-4 text-left shadow-soft transition-all hover:-translate-y-[3px] hover:border-brand-2/60 hover:shadow-lift focus-visible:ring-2 focus-visible:ring-primary dark:border-white/10 dark:bg-white/[.03] dark:hover:border-brand-2/60"
       >
         <div className="flex items-start justify-between gap-2">
           <h3

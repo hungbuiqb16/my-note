@@ -100,6 +100,11 @@ export function Login() {
       const message = err instanceof Error ? err.message : ''
       if (mode === 'signin' && /invalid login credentials/i.test(message)) {
         toast.error('Email hoặc mật khẩu không đúng')
+      } else if (
+        message === 'EMAIL_EXISTS' ||
+        /already registered/i.test(message)
+      ) {
+        toast.error('Email này đã được đăng ký. Vui lòng đăng nhập.')
       } else {
         toast.error(message || 'Có lỗi xảy ra')
       }

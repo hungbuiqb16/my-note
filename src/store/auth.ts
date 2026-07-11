@@ -61,7 +61,7 @@ export const useAuth = create<AuthState>((set) => ({
   },
 
   signUp: async (email, password) => {
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       // Confirmation link returns to the current app origin (must be allowed
@@ -69,6 +69,12 @@ export const useAuth = create<AuthState>((set) => ({
       options: { emailRedirectTo: window.location.origin },
     })
     if (error) throw error
+    // With "Confirm email" on, Supabase hides the "already registered" case to
+    // prevent enumeration: it returns no error but a user with an empty
+    // `identities` array. Surface it so the UI doesn't claim success.
+    if (data.user && data.user.identities?.length === 0) {
+      throw new Error('EMAIL_EXISTS')
+    }
   },
 
   signInWithProvider: async (provider) => {

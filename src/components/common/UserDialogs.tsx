@@ -412,15 +412,12 @@ export function AboutDialog({ open, onOpenChange }: DialogProps) {
             </li>
             <li className="flex gap-2">
               <span className="text-primary">•</span>
-              Và 7749 tính năng khác đang chờ bạn khám phá! 😉
+              Và 7749 tính năng khác đang chờ bạn khám phá!
             </li>
           </ul>
         </div>
 
-        <DialogFooter className="sm:items-center sm:justify-between">
-          <p className="text-xs text-muted-foreground">
-            Phiên bản 1.0.0 by Hùng Bùi
-          </p>
+        <DialogFooter>
           <DialogClose asChild>
             <Button variant="secondary" size="sm">
               Đóng

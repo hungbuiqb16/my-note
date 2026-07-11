@@ -458,7 +458,10 @@ export function AllNotes({ className, onOpen, onOpenSidebar }: AllNotesProps) {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={handleExport}>
+              <DropdownMenuItem
+                disabled={notes.length === 0}
+                onClick={handleExport}
+              >
                 <Download />
                 Xuất dữ liệu
               </DropdownMenuItem>

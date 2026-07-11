@@ -4,6 +4,8 @@ import { Hash, X } from 'lucide-react'
 interface TagInputProps {
   tags: string[]
   onChange: (tags: string[]) => void
+  /** Existing tags (across all notes) to suggest while typing. */
+  suggestions?: string[]
   /** Display tags without the ability to add/edit/remove. */
   readOnly?: boolean
 }
@@ -12,7 +14,12 @@ function normalize(raw: string) {
   return raw.trim().toLowerCase().replace(/\s+/g, '-')
 }
 
-export function TagInput({ tags, onChange, readOnly = false }: TagInputProps) {
+export function TagInput({
+  tags,
+  onChange,
+  suggestions = [],
+  readOnly = false,
+}: TagInputProps) {
   const [draft, setDraft] = useState('')
 
   if (readOnly) {
@@ -48,8 +55,15 @@ export function TagInput({ tags, onChange, readOnly = false }: TagInputProps) {
     }
   }
 
+  const q = draft.trim().toLowerCase()
+  const matches = q
+    ? suggestions
+        .filter((t) => t.includes(q) && !tags.includes(t))
+        .slice(0, 8)
+    : []
+
   return (
-    <div className="flex flex-wrap items-center gap-1.5">
+    <div className="relative flex flex-wrap items-center gap-1.5">
       {tags.map((tag) => (
         <span
           key={tag}
@@ -77,6 +91,25 @@ export function TagInput({ tags, onChange, readOnly = false }: TagInputProps) {
           className="w-24 bg-transparent text-xs placeholder:text-muted-foreground/60 focus:outline-none"
         />
       </span>
+
+      {matches.length > 0 && (
+        <div className="absolute top-full left-0 z-10 mt-1 flex max-w-full flex-wrap gap-1 rounded-lg border border-black/10 bg-popover p-1.5 shadow-lift dark:border-white/10">
+          {matches.map((tag) => (
+            <button
+              key={tag}
+              type="button"
+              // mousedown (not click) so the input doesn't blur-add the draft first
+              onMouseDown={(e) => {
+                e.preventDefault()
+                addTag(tag)
+              }}
+              className="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary hover:bg-primary/20"
+            >
+              {tag}
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   )
 }

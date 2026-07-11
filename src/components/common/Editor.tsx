@@ -47,7 +47,7 @@ import {
 import { TagInput } from '@/components/common/TagInput'
 import { ShareDialog } from '@/components/common/ShareDialog'
 import { SecureDialog } from '@/components/common/SecureDialog'
-import { useNotes } from '@/store/notes'
+import { selectAllTags, useNotes } from '@/store/notes'
 import { useAuth } from '@/store/auth'
 import { useVault } from '@/store/vault'
 import { uploadNoteImage } from '@/services/storage'
@@ -97,6 +97,8 @@ export function Editor({ note, className, onBack }: EditorProps) {
   const remove = useNotes((s) => s.remove)
   const togglePin = useNotes((s) => s.togglePin)
   const setTags = useNotes((s) => s.setTags)
+  const allNotes = useNotes((s) => s.notes)
+  const tagSuggestions = useMemo(() => selectAllTags(allNotes), [allNotes])
   const userId = useAuth((s) => s.user?.id)
   const vaultKey = useVault((s) => s.key)
   const vaultEncrypt = useVault((s) => s.encrypt)
@@ -446,6 +448,7 @@ export function Editor({ note, className, onBack }: EditorProps) {
             <TagInput
               tags={note.tags}
               onChange={(tags) => setTags(note.id, tags)}
+              suggestions={tagSuggestions}
               readOnly={mode === 'preview'}
             />
           </div>

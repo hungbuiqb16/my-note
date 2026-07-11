@@ -7,7 +7,7 @@ const STORAGE_KEY = 'noteflow-theme'
 function getInitialTheme(): Theme {
   const stored = localStorage.getItem(STORAGE_KEY)
   if (stored === 'light' || stored === 'dark') return stored
-  return 'dark' // default interface
+  return 'light' // default interface
 }
 
 /**

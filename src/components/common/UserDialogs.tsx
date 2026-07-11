@@ -369,6 +369,131 @@ function AccountSettingsForm() {
   )
 }
 
+/** About the app: what it is, features, credits. */
+export function AboutDialog({ open, onOpenChange }: DialogProps) {
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <div className="flex items-center gap-3">
+            <img
+              src="/favicon.png"
+              alt="hnote"
+              className="size-10 shrink-0 rounded-xl"
+            />
+            <div>
+              <DialogTitle>hnote</DialogTitle>
+              <DialogDescription>Ghi chú nhanh, gọn, riêng tư.</DialogDescription>
+            </div>
+          </div>
+        </DialogHeader>
+
+        <div className="space-y-4 text-sm">
+          <p className="text-muted-foreground">
+            hnote là ứng dụng ghi chú tối giản giúp bạn viết và sắp xếp ý tưởng
+            mọi lúc. Dữ liệu được đồng bộ an toàn và chỉ mình bạn truy cập.
+          </p>
+          <ul className="space-y-1.5 text-muted-foreground">
+            <li className="flex gap-2">
+              <span className="text-primary">•</span>
+              Soạn thảo Markdown với xem trước và tô sáng cú pháp
+            </li>
+            <li className="flex gap-2">
+              <span className="text-primary">•</span>
+              Gắn tag, tìm kiếm toàn văn và ghim ghi chú quan trọng
+            </li>
+            <li className="flex gap-2">
+              <span className="text-primary">•</span>
+              Ghi chú bảo mật mã hóa đầu-cuối (E2E) và chia sẻ công khai
+            </li>
+            <li className="flex gap-2">
+              <span className="text-primary">•</span>
+              Đồng bộ thời gian thực trên nhiều thiết bị
+            </li>
+          </ul>
+          <p className="text-xs text-muted-foreground">Phiên bản 1.0.0 by Hùng Bùi</p>
+        </div>
+
+        <DialogFooter>
+          <DialogClose asChild>
+            <Button variant="secondary">Đóng</Button>
+          </DialogClose>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
+/** Terms of service / usage terms. */
+export function TermsDialog({ open, onOpenChange }: DialogProps) {
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-lg">
+        <DialogHeader>
+          <DialogTitle>Điều khoản sử dụng</DialogTitle>
+          <DialogDescription>
+            Vui lòng đọc kỹ trước khi sử dụng hnote.
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="max-h-[60vh] space-y-4 overflow-y-auto pr-1 text-sm text-muted-foreground">
+          <section className="space-y-1">
+            <h3 className="font-semibold text-foreground">1. Chấp nhận điều khoản</h3>
+            <p>
+              Khi tạo tài khoản và sử dụng hnote, bạn đồng ý với các điều khoản
+              dưới đây. Nếu không đồng ý, vui lòng ngừng sử dụng dịch vụ.
+            </p>
+          </section>
+          <section className="space-y-1">
+            <h3 className="font-semibold text-foreground">2. Tài khoản</h3>
+            <p>
+              Bạn chịu trách nhiệm bảo mật thông tin đăng nhập và mọi hoạt động
+              diễn ra trong tài khoản của mình. Hãy dùng mật khẩu đủ mạnh.
+            </p>
+          </section>
+          <section className="space-y-1">
+            <h3 className="font-semibold text-foreground">3. Nội dung của bạn</h3>
+            <p>
+              Bạn giữ toàn quyền với ghi chú do mình tạo. Chúng tôi không xem,
+              không sử dụng nội dung của bạn cho mục đích khác. Ghi chú được đặt
+              chế độ chia sẻ công khai có thể được bất kỳ ai có liên kết truy cập.
+            </p>
+          </section>
+          <section className="space-y-1">
+            <h3 className="font-semibold text-foreground">4. Sử dụng hợp lệ</h3>
+            <p>
+              Không dùng dịch vụ cho hành vi vi phạm pháp luật, phát tán mã độc,
+              hoặc xâm phạm quyền của người khác.
+            </p>
+          </section>
+          <section className="space-y-1">
+            <h3 className="font-semibold text-foreground">5. Riêng tư & bảo mật</h3>
+            <p>
+              Ghi chú bảo mật được mã hóa đầu-cuối; khóa giải mã chỉ tồn tại trên
+              thiết bị của bạn và không được lưu trên máy chủ. Nếu quên mật khẩu
+              vault, dữ liệu đã mã hóa sẽ không thể khôi phục.
+            </p>
+          </section>
+          <section className="space-y-1">
+            <h3 className="font-semibold text-foreground">6. Miễn trừ trách nhiệm</h3>
+            <p>
+              Dịch vụ được cung cấp “nguyên trạng”. Chúng tôi khuyến nghị bạn sao
+              lưu dữ liệu quan trọng và không chịu trách nhiệm cho mất mát dữ liệu
+              ngoài tầm kiểm soát.
+            </p>
+          </section>
+        </div>
+
+        <DialogFooter>
+          <DialogClose asChild>
+            <Button variant="secondary">Đóng</Button>
+          </DialogClose>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
 /** Data export, global sign-out, and account deletion. */
 export function PrivacyDialog({ open, onOpenChange }: DialogProps) {
   const signOutAll = useAuth((s) => s.signOutAll)

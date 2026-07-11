@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import {
   ChevronDown,
+  FileText,
+  Info,
   LogOut,
   Settings,
   ShieldCheck,
@@ -18,14 +20,23 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import {
+  AboutDialog,
   AccountSettingsDialog,
   EditProfileDialog,
   PrivacyDialog,
   ProfileDialog,
+  TermsDialog,
 } from '@/components/common/UserDialogs'
 import { useAuth } from '@/store/auth'
 
-type DialogView = 'profile' | 'edit' | 'account' | 'privacy' | null
+type DialogView =
+  | 'profile'
+  | 'edit'
+  | 'account'
+  | 'privacy'
+  | 'about'
+  | 'terms'
+  | null
 
 export function UserMenu() {
   const user = useAuth((s) => s.user)
@@ -98,6 +109,15 @@ export function UserMenu() {
             Quyền riêng tư
           </DropdownMenuItem>
           <DropdownMenuSeparator />
+          <DropdownMenuItem onClick={() => setView('about')}>
+            <Info />
+            Giới thiệu
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => setView('terms')}>
+            <FileText />
+            Điều khoản
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
           <DropdownMenuItem variant="destructive" onClick={handleLogout}>
             <LogOut />
             Đăng xuất
@@ -119,6 +139,14 @@ export function UserMenu() {
       />
       <PrivacyDialog
         open={view === 'privacy'}
+        onOpenChange={(o) => !o && setView(null)}
+      />
+      <AboutDialog
+        open={view === 'about'}
+        onOpenChange={(o) => !o && setView(null)}
+      />
+      <TermsDialog
+        open={view === 'terms'}
         onOpenChange={(o) => !o && setView(null)}
       />
     </>

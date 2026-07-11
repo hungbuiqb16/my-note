@@ -213,7 +213,7 @@ export function AllNotes({ className, onOpen, onOpenSidebar }: AllNotesProps) {
         className,
       )}
     >
-      <div className="flex items-center gap-2 border-b border-black/5 px-4 py-3 md:px-8 dark:border-white/5">
+      <div className="relative flex items-center gap-2 border-b border-black/5 px-4 py-3 md:px-8 dark:border-white/5">
         <input
           ref={importRef}
           type="file"
@@ -222,6 +222,15 @@ export function AllNotes({ className, onOpen, onOpenSidebar }: AllNotesProps) {
           onChange={handleImport}
         />
 
+        <button
+          type="button"
+          onClick={onOpenSidebar}
+          aria-label="Mở menu"
+          className="shrink-0 text-muted-foreground md:hidden"
+        >
+          <Menu className="size-5" />
+        </button>
+
         {searchOpen ? (
           <div className="relative flex-1">
             <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
@@ -229,7 +238,7 @@ export function AllNotes({ className, onOpen, onOpenSidebar }: AllNotesProps) {
               autoFocus
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Tìm kiếm ghi chú…"
+              placeholder="Tìm kiếm…"
               className="h-auto rounded-xl py-2 pr-9 pl-9"
             />
             <button
@@ -245,18 +254,13 @@ export function AllNotes({ className, onOpen, onOpenSidebar }: AllNotesProps) {
             </button>
           </div>
         ) : (
-          <>
-            <button
-              type="button"
-              onClick={onOpenSidebar}
-              aria-label="Mở menu"
-              className="text-muted-foreground md:hidden"
-            >
-              <Menu className="size-5" />
-            </button>
-            <h2 className="flex-1 font-display text-lg font-bold tracking-tight">
-              Tất cả ghi chú
-            </h2>
+          <h2 className="pointer-events-none absolute inset-x-0 text-center font-display text-lg font-bold tracking-tight">
+            Tất cả ghi chú
+          </h2>
+        )}
+
+        <div className="ml-auto flex items-center gap-1">
+          {!searchOpen && (
             <Button
               variant="ghost"
               size="icon"
@@ -266,36 +270,35 @@ export function AllNotes({ className, onOpen, onOpenSidebar }: AllNotesProps) {
             >
               <Search className="size-4" />
             </Button>
-          </>
-        )}
-
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              disabled={dataBusy}
-              aria-label="Dữ liệu & cài đặt"
-              className="rounded-xl text-muted-foreground"
-            >
-              <Settings className="size-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={handleExport}>
-              <Download />
-              Xuất dữ liệu
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => importRef.current?.click()}>
-              <Upload />
-              Nhập dữ liệu
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={handleCleanup}>
-              <Eraser />
-              Dọn ảnh không dùng
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+          )}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                disabled={dataBusy}
+                aria-label="Dữ liệu & cài đặt"
+                className="rounded-xl text-muted-foreground"
+              >
+                <Settings className="size-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={handleExport}>
+                <Download />
+                Xuất dữ liệu
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => importRef.current?.click()}>
+                <Upload />
+                Nhập dữ liệu
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleCleanup}>
+                <Eraser />
+                Dọn ảnh không dùng
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </div>
 
       <div className="flex-1 overflow-y-auto p-4 md:p-6">

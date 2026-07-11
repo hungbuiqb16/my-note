@@ -55,23 +55,35 @@ export function Sidebar({
     onShowAll()
   }
 
+  // Logo → home: clear filters and show the full notes grid.
+  const goHome = () => {
+    setSearch('')
+    setActiveTag(null)
+    onShowAll()
+  }
+
   return (
     <aside
       className={cn(
-        'glass flex h-full w-1/2 flex-shrink-0 flex-col border-r border-black/5 md:w-72 md:rounded-2xl md:border md:shadow-soft lg:w-80 dark:border-white/5',
+        'glass flex h-full w-72 flex-shrink-0 flex-col border-r border-black/5 md:rounded-2xl md:border md:shadow-soft lg:w-80 dark:border-white/5',
         className,
       )}
     >
       <header className="px-5 pt-5 pb-4">
         <div className="flex items-center justify-between">
-          <h1 className="flex items-center gap-2 font-display text-xl font-bold tracking-tight">
+          <button
+            type="button"
+            onClick={goHome}
+            aria-label="Về trang chủ"
+            className="flex items-center gap-2 font-display text-xl font-bold tracking-tight transition-opacity hover:opacity-80"
+          >
             <span className="grad-btn grid size-7 place-items-center rounded-lg text-white shadow-lift">
               <Sparkles className="size-4" />
             </span>
             <span>
               h<span className="grad-text">note</span>
             </span>
-          </h1>
+          </button>
           <Tooltip>
             <TooltipTrigger asChild>
               <Button

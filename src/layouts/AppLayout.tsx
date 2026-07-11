@@ -94,6 +94,8 @@ export function AppLayout() {
         <Sidebar
           className={cn(
             'fixed inset-y-0 left-0 z-30 transition-transform duration-300 ease-out md:static md:z-auto md:translate-x-0',
+            // Opaque + elevated on mobile so the drawer reads clearly over content.
+            'max-md:bg-card max-md:shadow-2xl',
             mobileView === 'sidebar' ? 'translate-x-0' : '-translate-x-full',
           )}
           theme={theme}

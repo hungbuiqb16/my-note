@@ -507,17 +507,18 @@ export function AllNotes({ className, onOpen, onOpenSidebar }: AllNotesProps) {
       </div>
 
       {totalPages > 1 && (
-        <div className="flex shrink-0 items-center justify-center gap-3 border-t border-black/5 px-4 py-3 dark:border-white/5">
+        <div className="flex shrink-0 items-center justify-center gap-3 border-t border-black/10 bg-card/70 px-4 py-1.5 backdrop-blur-md dark:border-white/10">
           <Button
             variant="secondary"
             size="icon"
             disabled={currentPage === 1}
             onClick={() => setPage(currentPage - 1)}
             aria-label="Trang trước"
+            className="size-8"
           >
             <ChevronLeft />
           </Button>
-          <span className="text-sm text-muted-foreground">
+          <span className="text-xs text-muted-foreground">
             Trang {currentPage} / {totalPages}
           </span>
           <Button
@@ -526,6 +527,7 @@ export function AllNotes({ className, onOpen, onOpenSidebar }: AllNotesProps) {
             disabled={currentPage === totalPages}
             onClick={() => setPage(currentPage + 1)}
             aria-label="Trang sau"
+            className="size-8"
           >
             <ChevronRight />
           </Button>

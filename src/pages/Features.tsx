@@ -67,7 +67,7 @@ export function Features() {
         className="pointer-events-none absolute top-80 -right-24 size-96 rounded-full bg-primary/20 blur-[90px]"
       />
 
-      <div className="relative mx-auto max-w-6xl px-6 pt-4 pb-16 md:pt-5">
+      <div className="relative mx-auto max-w-6xl px-6 pt-4 pb-6 md:pt-5">
         {/* Top bar */}
         <div className="flex items-center justify-between">
           <Link
@@ -97,7 +97,7 @@ export function Features() {
         </div>
 
         {/* Hero */}
-        <section className="mt-12 grid items-center gap-14 lg:mt-20 lg:grid-cols-2">
+        <section className="mt-6 grid items-center gap-14 lg:mt-10 lg:grid-cols-2">
           <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
             <span className="inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/10 px-4 py-1.5 text-sm font-medium text-primary">
               <Sparkles className="size-4" />

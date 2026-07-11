@@ -241,6 +241,7 @@ export function AllNotes({ className, onOpen, onOpenSidebar }: AllNotesProps) {
   const remove = useNotes((s) => s.remove)
   const loadNotes = useNotes((s) => s.load)
   const userId = useAuth((s) => s.user?.id)
+  const email = useAuth((s) => s.user?.email)
 
   const isSearching = search.trim().length > 0
   const visible = useMemo(() => {
@@ -259,7 +260,15 @@ export function AllNotes({ className, onOpen, onOpenSidebar }: AllNotesProps) {
     try {
       const rows = await exportNotes(userId)
       const json = JSON.stringify(rows, null, 2)
-      const filename = `hnote-export-${new Date().toISOString().slice(0, 10)}.json`
+
+      // Filename: hnote-export-{name}-YY-MM-DD-h-i-s
+      const now = new Date()
+      const p = (n: number) => String(n).padStart(2, '0')
+      const stamp =
+        `${p(now.getFullYear() % 100)}-${p(now.getMonth() + 1)}-${p(now.getDate())}` +
+        `-${p(now.getHours())}-${p(now.getMinutes())}-${p(now.getSeconds())}`
+      const name = email?.split('@')[0] ?? 'user'
+      const filename = `hnote-export-${name}-${stamp}.json`
 
       const picker = (
         window as unknown as {
@@ -439,6 +448,9 @@ export function AllNotes({ className, onOpen, onOpenSidebar }: AllNotesProps) {
         ) : (
           <h2 className="pointer-events-none absolute inset-x-0 text-center font-display text-lg font-bold tracking-tight">
             Tất cả ghi chú
+            <span className="ml-1.5 font-sans text-sm font-medium text-muted-foreground">
+              ({notes.length})
+            </span>
           </h2>
         )}
 
@@ -480,7 +492,7 @@ export function AllNotes({ className, onOpen, onOpenSidebar }: AllNotesProps) {
               </DropdownMenuItem>
               <DropdownMenuItem onClick={handleCleanup}>
                 <Eraser />
-                Dọn ảnh không dùng
+                Xóa ảnh không dùng
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

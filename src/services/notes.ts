@@ -149,7 +149,14 @@ export async function importNotes(
       content: typeof it.content === 'string' ? it.content : '',
       pinned: Boolean(it.pinned),
       tags: Array.isArray(it.tags)
-        ? it.tags.filter((t): t is string => typeof t === 'string')
+        ? [
+            ...new Set(
+              it.tags
+                .filter((t): t is string => typeof t === 'string')
+                .map((t) => t.trim().toLowerCase())
+                .filter(Boolean),
+            ),
+          ]
         : [],
     }))
     .filter((r) => r.title.trim() !== '' || r.content.trim() !== '')

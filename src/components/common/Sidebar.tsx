@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef } from 'react'
-import { LayoutGrid, Moon, Plus, Search, Sparkles, Sun, X } from 'lucide-react'
+import { Moon, Plus, Search, Sparkles, Sun, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
@@ -14,8 +14,6 @@ import { cn } from '@/lib/utils'
 interface SidebarProps {
   className?: string
   theme: 'light' | 'dark'
-  /** Whether the grid ("all notes") view is currently shown. */
-  gridActive: boolean
   onToggleTheme: () => void
   onCreate: () => void
   /** Navigate to the notes grid (also used after picking a filter). */
@@ -25,7 +23,6 @@ interface SidebarProps {
 export function Sidebar({
   className,
   theme,
-  gridActive,
   onToggleTheme,
   onCreate,
   onShowAll,
@@ -142,25 +139,8 @@ export function Sidebar({
       </header>
 
       <nav className="flex-1 overflow-y-auto px-3">
-        <button
-          type="button"
-          onClick={onShowAll}
-          className={cn(
-            'flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors',
-            gridActive
-              ? 'bg-primary/10 text-primary'
-              : 'text-foreground hover:bg-black/[.04] dark:hover:bg-white/[.06]',
-          )}
-        >
-          <LayoutGrid className="size-4" />
-          Tất cả ghi chú
-          <span className="ml-auto text-xs text-muted-foreground">
-            {notes.length}
-          </span>
-        </button>
-
         {allTags.length > 0 && (
-          <div className="mt-4">
+          <div className="mt-1">
             <p className="px-3 pb-1.5 text-xs font-medium text-muted-foreground">
               Tags
             </p>

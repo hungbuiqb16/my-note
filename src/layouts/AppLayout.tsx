@@ -99,7 +99,6 @@ export function AppLayout() {
             mobileView === 'sidebar' ? 'translate-x-0' : '-translate-x-full',
           )}
           theme={theme}
-          gridActive={!showingEditor}
           onToggleTheme={toggle}
           onCreate={handleCreate}
           onShowAll={showGrid}

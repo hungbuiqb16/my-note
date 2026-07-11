@@ -342,9 +342,13 @@ export const useNotes = create<NotesState>((set, get) => {
       scheduleSave(id)
     },
 
-    setTags: async (id, tags) => {
+    setTags: async (id, rawTags) => {
       const note = get().notes.find((n) => n.id === id)
       if (!note) return
+      // Tags are always stored lowercase + trimmed + de-duplicated.
+      const tags = [
+        ...new Set(rawTags.map((t) => t.trim().toLowerCase()).filter(Boolean)),
+      ]
       const prev = note.tags
       set((s) => ({
         notes: s.notes.map((n) =>

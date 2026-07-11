@@ -70,7 +70,7 @@ export function TagInput({ tags, onChange, readOnly = false }: TagInputProps) {
         <Hash className="size-3.5" />
         <input
           value={draft}
-          onChange={(e) => setDraft(e.target.value)}
+          onChange={(e) => setDraft(e.target.value.toLowerCase())}
           onKeyDown={onKeyDown}
           onBlur={() => addTag(draft)}
           placeholder="Thêm tag…"

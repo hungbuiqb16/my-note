@@ -67,15 +67,15 @@ export function Features() {
         className="pointer-events-none absolute top-80 -right-24 size-96 rounded-full bg-primary/20 blur-[90px]"
       />
 
-      <div className="relative mx-auto max-w-[96rem] px-6 pt-4 pb-16 md:px-10 md:pt-5">
+      <div className="relative mx-auto max-w-6xl px-6 pt-4 pb-16 md:pt-5">
         {/* Top bar */}
         <div className="flex items-center justify-between">
           <Link
             to={ROUTES.home}
-            className="flex items-center gap-2.5 font-display text-2xl font-bold tracking-tight transition-opacity hover:opacity-80"
+            className="flex items-center gap-2 font-display text-xl font-bold tracking-tight transition-opacity hover:opacity-80"
           >
-            <span className="grad-btn grid size-9 place-items-center rounded-xl text-white shadow-lift">
-              <Sparkles className="size-5" />
+            <span className="grad-btn grid size-8 place-items-center rounded-lg text-white shadow-lift">
+              <Sparkles className="size-4" />
             </span>
             <span>
               h<span className="grad-text">note</span>
@@ -104,11 +104,11 @@ export function Features() {
               Ghi chú nhanh, gọn, riêng tư
             </span>
 
-            <h1 className="mt-6 font-display text-5xl leading-[1.1] font-extrabold tracking-tight lg:text-7xl">
+            <h1 className="mt-6 font-display text-4xl leading-tight font-extrabold tracking-tight md:text-5xl">
               Mọi thứ bạn cần trong <span className="grad-text">hnote</span>
             </h1>
 
-            <p className="mt-6 text-2xl leading-relaxed font-medium text-muted-foreground">
+            <p className="mt-6 text-lg leading-relaxed font-medium text-muted-foreground">
               Ứng dụng ghi chú hiện đại với Markdown, đồng bộ thời gian thực, mã
               hóa đầu-cuối và trải nghiệm tối giản.
             </p>
@@ -138,13 +138,13 @@ export function Features() {
               {MINI.map(({ icon: Icon, title, sub, color }) => (
                 <div key={title} className="flex items-center gap-3">
                   <div
-                    className={`grid size-11 shrink-0 place-items-center rounded-xl shadow-sm ${color}`}
+                    className={`grid size-10 shrink-0 place-items-center rounded-lg shadow-sm ${color}`}
                   >
                     <Icon className="size-5" />
                   </div>
                   <div>
-                    <div className="text-base font-semibold">{title}</div>
-                    <div className="text-sm text-muted-foreground">{sub}</div>
+                    <div className="text-sm font-semibold">{title}</div>
+                    <div className="text-xs text-muted-foreground">{sub}</div>
                   </div>
                 </div>
               ))}
@@ -152,26 +152,26 @@ export function Features() {
           </div>
 
           {/* Editor-like note preview */}
-          <div className="animate-in fade-in slide-in-from-bottom-4 rounded-3xl border border-black/5 bg-card p-8 shadow-lift delay-150 duration-700 md:p-12 dark:border-white/10">
-            <h3 className="font-display text-3xl font-bold tracking-tight md:text-4xl">
+          <div className="animate-in fade-in slide-in-from-bottom-4 rounded-3xl border border-black/5 bg-card p-6 shadow-lift delay-150 duration-700 md:p-8 dark:border-white/10">
+            <h3 className="font-display text-2xl font-bold tracking-tight">
               💡 Ý tưởng startup
             </h3>
-            <div className="mt-4 flex items-center gap-2.5">
-              <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 py-1 pr-2 pl-3 text-sm font-medium text-primary">
+            <div className="mt-3 flex items-center gap-2">
+              <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 py-0.5 pr-1.5 pl-2 text-xs font-medium text-primary">
                 hnote
                 <span className="text-primary/60">×</span>
               </span>
-              <span className="flex items-center gap-1 text-sm text-muted-foreground">
-                <Hash className="size-3.5" />
+              <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                <Hash className="size-3" />
                 Thêm tag…
               </span>
             </div>
-            <div className="grad-divider my-6 h-px w-20 rounded-full" />
-            <ul className="space-y-4 text-base">
+            <div className="grad-divider my-5 h-px w-16 rounded-full" />
+            <ul className="space-y-3 text-sm">
               {CHECKLIST.map((item) => (
-                <li key={item} className="flex items-center gap-3">
-                  <span className="grid size-5 shrink-0 place-items-center rounded-md bg-primary text-white">
-                    <Check className="size-3.5" strokeWidth={3} />
+                <li key={item} className="flex items-center gap-2.5">
+                  <span className="grid size-4 shrink-0 place-items-center rounded-[5px] bg-primary text-white">
+                    <Check className="size-3" strokeWidth={3} />
                   </span>
                   {item}
                 </li>
@@ -183,10 +183,10 @@ export function Features() {
         {/* Features — bento grid */}
         <section id="tinh-nang" className="mt-24 scroll-mt-8">
           <div className="text-center">
-            <h2 className="font-display text-4xl font-bold tracking-tight md:text-5xl">
+            <h2 className="font-display text-3xl font-bold tracking-tight md:text-4xl">
               Tất cả tính năng <span className="grad-text">trong một nơi</span>
             </h2>
-            <p className="mt-3 text-lg text-muted-foreground">
+            <p className="mt-3 text-muted-foreground">
               Không chỉ ghi chú, hnote giúp bạn quản lý kiến thức hiệu quả.
             </p>
           </div>
@@ -197,10 +197,10 @@ export function Features() {
               <div className="grid size-12 place-items-center rounded-2xl bg-white/15">
                 <PenLine className="size-6" />
               </div>
-              <h3 className="mt-8 font-display text-2xl font-bold">
+              <h3 className="mt-8 font-display text-xl font-bold">
                 Soạn thảo mạnh mẽ
               </h3>
-              <p className="mt-4 text-lg leading-relaxed font-medium text-white/90">
+              <p className="mt-4 leading-relaxed font-medium text-white/90">
                 Tạo và chỉnh sửa ghi chú với Markdown, xem trước trực tiếp, tự
                 động lưu, chèn ảnh, tô sáng cú pháp code, đếm từ và nhiều công cụ
                 hỗ trợ viết.
@@ -211,10 +211,10 @@ export function Features() {
               <div className="grid size-12 place-items-center rounded-2xl bg-sky-500/10 text-sky-500 shadow-sm">
                 <Search className="size-6" />
               </div>
-              <h3 className="mt-6 font-display text-2xl font-bold">
+              <h3 className="mt-6 font-display text-xl font-bold">
                 Quản lý thông minh
               </h3>
-              <p className="mt-4 text-base leading-relaxed font-medium text-muted-foreground">
+              <p className="mt-3 text-sm leading-relaxed font-medium text-muted-foreground">
                 Sắp xếp ghi chú bằng thẻ (Tags), tìm kiếm toàn văn, bộ lọc nâng
                 cao, ghim ghi chú, phân trang và thùng rác khôi phục trong 30
                 ngày.
@@ -225,10 +225,10 @@ export function Features() {
               <div className="grid size-12 place-items-center rounded-2xl bg-emerald-500/10 text-emerald-500 shadow-sm">
                 <Lock className="size-6" />
               </div>
-              <h3 className="mt-6 font-display text-2xl font-bold">
+              <h3 className="mt-6 font-display text-xl font-bold">
                 Bảo mật & Riêng tư
               </h3>
-              <p className="mt-4 text-base leading-relaxed font-medium text-muted-foreground">
+              <p className="mt-3 text-sm leading-relaxed font-medium text-muted-foreground">
                 Mã hóa đầu cuối (End-to-End Encryption) cho ghi chú quan trọng,
                 chia sẻ an toàn, mỗi người dùng chỉ truy cập được dữ liệu của
                 chính mình.
@@ -238,10 +238,10 @@ export function Features() {
             <div className="rounded-3xl border border-black/5 bg-card p-8 shadow-soft lg:col-span-2 dark:border-white/10">
               <div className="flex items-center justify-between gap-6">
                 <div>
-                  <h3 className="font-display text-2xl font-bold">
+                  <h3 className="font-display text-xl font-bold">
                     Đồng bộ mọi nơi
                   </h3>
-                  <p className="mt-3 text-lg font-medium text-muted-foreground">
+                  <p className="mt-3 font-medium text-muted-foreground">
                     Đồng bộ thời gian thực trên nhiều thiết bị, hỗ trợ
                     Import/Export dữ liệu, giao diện responsive, chế độ sáng/tối
                     và trải nghiệm mượt mà.
@@ -257,13 +257,13 @@ export function Features() {
 
         {/* Footer */}
         <footer className="mt-20 border-t border-black/5 pt-8 text-center dark:border-white/10">
-          <p className="font-display text-2xl font-bold tracking-tight">
+          <p className="font-display text-lg font-bold tracking-tight">
             h<span className="grad-text">note</span>
-            <span className="mx-2 font-sans text-base font-normal text-muted-foreground">
+            <span className="mx-2 font-sans text-sm font-normal text-muted-foreground">
               Phiên bản 1.0.0
             </span>
           </p>
-          <p className="mt-2 text-base text-muted-foreground">
+          <p className="mt-1 text-sm text-muted-foreground">
             Phát triển bởi{' '}
             <span className="grad-text font-semibold">Hùng Bùi</span> ⚡
           </p>

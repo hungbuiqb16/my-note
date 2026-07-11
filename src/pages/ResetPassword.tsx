@@ -1,7 +1,8 @@
 import { useState } from 'react'
-import { Eye, EyeOff, KeyRound } from 'lucide-react'
+import { Eye, EyeOff, Moon, Sparkles, Sun } from 'lucide-react'
 import { toast } from 'sonner'
 import { useAuth } from '@/store/auth'
+import { useTheme } from '@/hooks/useTheme'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -12,9 +13,11 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
+import { VantaBackground } from '@/components/common/VantaBackground'
 
 /** Shown after clicking a password-recovery email link (auth.recovery === true). */
 export function ResetPassword() {
+  const { theme, toggle } = useTheme()
   const updatePassword = useAuth((s) => s.updatePassword)
   const endRecovery = useAuth((s) => s.endRecovery)
 
@@ -46,13 +49,34 @@ export function ResetPassword() {
 
   return (
     <div className="flex min-h-screen items-center justify-center p-4">
+      <VantaBackground theme={theme} />
       <Card className="glass relative w-full max-w-sm border-black/5 shadow-lift dark:border-white/5">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={toggle}
+          aria-label="Đổi giao diện sáng / tối"
+          className="absolute top-3 right-3 rounded-xl text-muted-foreground"
+        >
+          {theme === 'dark' ? (
+            <Moon className="size-4" />
+          ) : (
+            <Sun className="size-4" />
+          )}
+        </Button>
         <CardHeader className="items-center text-center">
-          <div className="mb-2 grid size-11 place-items-center rounded-2xl bg-primary/10 text-primary">
-            <KeyRound className="size-5" />
+          <div className="mb-2 flex items-center justify-center gap-2 font-display text-2xl font-bold tracking-tight">
+            <span className="grad-btn grid size-8 place-items-center rounded-lg text-white shadow-lift">
+              <Sparkles className="size-4" />
+            </span>
+            <span>
+              h<span className="grad-text">note</span>
+            </span>
           </div>
           <CardTitle className="text-lg">Đặt lại mật khẩu</CardTitle>
-          <CardDescription>Nhập mật khẩu mới cho tài khoản của bạn.</CardDescription>
+          <CardDescription>
+            Nhập mật khẩu mới cho tài khoản của bạn.
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={onSubmit} className="space-y-4">

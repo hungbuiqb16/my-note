@@ -5,6 +5,7 @@ import {
   Download,
   EllipsisVertical,
   Eraser,
+  Lock,
   Menu,
   Pin,
   PinOff,
@@ -37,6 +38,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
 import { ShareDialog } from '@/components/common/ShareDialog'
+import { Highlight } from '@/components/common/Highlight'
 import { timeAgo } from '@/utils/time'
 import { cn } from '@/lib/utils'
 import type { Note } from '@/types/note'
@@ -52,15 +54,20 @@ interface AllNotesProps {
 export function AllNotes({ className, onOpen, onOpenSidebar }: AllNotesProps) {
   const notes = useNotes((s) => s.notes)
   const search = useNotes((s) => s.search)
+  const searchResults = useNotes((s) => s.searchResults)
+  const searching = useNotes((s) => s.searching)
   const activeTag = useNotes((s) => s.activeTag)
   const togglePin = useNotes((s) => s.togglePin)
   const remove = useNotes((s) => s.remove)
   const loadNotes = useNotes((s) => s.load)
   const userId = useAuth((s) => s.user?.id)
-  const visible = useMemo(
-    () => selectVisibleNotes(notes, search, activeTag),
-    [notes, search, activeTag],
-  )
+
+  const isSearching = search.trim().length > 0
+  const visible = useMemo(() => {
+    // Base list: server search results when searching, else all notes.
+    const list = isSearching ? (searchResults ?? []) : notes
+    return selectVisibleNotes(list, activeTag)
+  }, [isSearching, searchResults, notes, activeTag])
 
   const importRef = useRef<HTMLInputElement>(null)
   const [dataBusy, setDataBusy] = useState(false)
@@ -88,7 +95,10 @@ export function AllNotes({ className, onOpen, onOpenSidebar }: AllNotesProps) {
           handle = await picker({
             suggestedName: filename,
             types: [
-              { description: 'JSON', accept: { 'application/json': ['.json'] } },
+              {
+                description: 'JSON',
+                accept: { 'application/json': ['.json'] },
+              },
             ],
           })
         } catch (err) {
@@ -111,7 +121,9 @@ export function AllNotes({ className, onOpen, onOpenSidebar }: AllNotesProps) {
       }
       toast.success(`Đã xuất ${rows.length} ghi chú`)
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Không xuất được dữ liệu')
+      toast.error(
+        err instanceof Error ? err.message : 'Không xuất được dữ liệu',
+      )
     } finally {
       setDataBusy(false)
     }
@@ -246,9 +258,15 @@ export function AllNotes({ className, onOpen, onOpenSidebar }: AllNotesProps) {
       </div>
 
       <div className="flex-1 overflow-y-auto p-4 md:p-6">
-        {visible.length === 0 ? (
+        {isSearching && searching && searchResults === null ? (
           <p className="py-16 text-center text-sm text-muted-foreground">
-            Không có ghi chú nào.
+            Đang tìm kiếm…
+          </p>
+        ) : visible.length === 0 ? (
+          <p className="py-16 text-center text-sm text-muted-foreground">
+            {isSearching
+              ? 'Không tìm thấy kết quả nào.'
+              : 'Không có ghi chú nào.'}
           </p>
         ) : (
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -267,15 +285,34 @@ export function AllNotes({ className, onOpen, onOpenSidebar }: AllNotesProps) {
                           'font-normal text-muted-foreground italic',
                       )}
                     >
-                      {note.title || 'Chưa có tiêu đề'}
+                      {note.title ? (
+                        <Highlight text={note.title} query={search} />
+                      ) : (
+                        'Chưa có tiêu đề'
+                      )}
                     </h3>
-                    {note.pinned && (
-                      <Pin className="mt-0.5 size-3.5 shrink-0 fill-primary text-primary" />
-                    )}
+                    <div className="mt-0.5 flex shrink-0 items-center gap-1">
+                      {note.isEncrypted && (
+                        <Lock className="size-3.5 text-primary" />
+                      )}
+                      {note.pinned && (
+                        <Pin className="size-3.5 fill-primary text-primary" />
+                      )}
+                    </div>
                   </div>
-                  <p className="mt-1 line-clamp-3 flex-1 text-[13px] whitespace-pre-wrap text-muted-foreground">
-                    {note.content || 'Trống'}
-                  </p>
+                  {note.isEncrypted ? (
+                    <p className="mt-1 flex flex-1 items-center gap-1.5 text-[13px] text-muted-foreground italic">
+                      <Lock className="size-3.5" /> Nội dung được mã hóa
+                    </p>
+                  ) : (
+                    <p className="mt-1 line-clamp-3 flex-1 text-[13px] whitespace-pre-wrap text-muted-foreground">
+                      {note.content ? (
+                        <Highlight text={note.content} query={search} />
+                      ) : (
+                        'Trống'
+                      )}
+                    </p>
+                  )}
                   {note.tags.length > 0 && (
                     <div className="mt-2 flex flex-wrap gap-1">
                       {note.tags.slice(0, 3).map((tag) => (
@@ -315,7 +352,10 @@ export function AllNotes({ className, onOpen, onOpenSidebar }: AllNotesProps) {
                         {note.pinned ? <PinOff /> : <Pin />}
                         {note.pinned ? 'Bỏ ghim' : 'Ghim'}
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => setShareId(note.id)}>
+                      <DropdownMenuItem
+                        disabled={note.isEncrypted}
+                        onClick={() => setShareId(note.id)}
+                      >
                         <Share2 />
                         Chia sẻ
                       </DropdownMenuItem>

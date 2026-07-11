@@ -67,6 +67,18 @@ export async function fetchPublicNote(
   }
 }
 
+/** Server-side full-text search (title + content) for the current user. */
+export async function searchNotes(query: string): Promise<Note[]> {
+  const { data, error } = await supabase
+    .from('notes')
+    .select('*')
+    .textSearch('fts', query, { type: 'websearch', config: 'simple' })
+    .order('pinned', { ascending: false })
+    .order('updated_at', { ascending: false })
+  if (error) throw error
+  return (data as NoteRow[]).map(toNote)
+}
+
 /** All notes for the current user, pinned first then most-recent. */
 export async function fetchNotes(): Promise<Note[]> {
   const { data, error } = await supabase

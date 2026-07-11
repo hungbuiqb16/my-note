@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Moon, Sparkles, Sun } from 'lucide-react'
+import { Eye, EyeOff, Moon, Sparkles, Sun } from 'lucide-react'
 import { toast } from 'sonner'
 import { useAuth } from '@/store/auth'
 import { useTheme } from '@/hooks/useTheme'
@@ -26,6 +26,7 @@ export function Login() {
   const [mode, setMode] = useState<Mode>('signin')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
 
   const onSubmit = async (e: React.FormEvent) => {
@@ -115,7 +116,7 @@ export function Login() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="Email đã đăng ký"
+                placeholder="email@example.com"
               />
             </div>
             {mode !== 'reset' && (
@@ -132,18 +133,33 @@ export function Login() {
                     </button>
                   )}
                 </div>
-                <Input
-                  id="password"
-                  type="password"
-                  autoComplete={
-                    mode === 'signin' ? 'current-password' : 'new-password'
-                  }
-                  required
-                  minLength={6}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Tối thiểu 6 ký tự"
-                />
+                <div className="relative">
+                  <Input
+                    id="password"
+                    type={showPassword ? 'text' : 'password'}
+                    autoComplete={
+                      mode === 'signin' ? 'current-password' : 'new-password'
+                    }
+                    required
+                    minLength={6}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Tối thiểu 6 ký tự"
+                    className="pr-10"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((v) => !v)}
+                    aria-label={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
+                    className="absolute top-1/2 right-2.5 grid size-6 -translate-y-1/2 place-items-center rounded-md text-muted-foreground transition-colors hover:text-foreground"
+                  >
+                    {showPassword ? (
+                      <EyeOff className="size-4" />
+                    ) : (
+                      <Eye className="size-4" />
+                    )}
+                  </button>
+                </div>
               </div>
             )}
             <Button
@@ -151,7 +167,7 @@ export function Login() {
               disabled={loading}
               className="grad-btn h-auto w-full rounded-xl py-2.5 font-semibold text-white shadow-lift"
             >
-              {loading ? 'Đang đăng nhập…' : submitLabel}
+              {loading ? 'Đang xử lý…' : submitLabel}
             </Button>
           </form>
 

@@ -8,6 +8,9 @@ interface NotesState {
   notes: Note[]
   currentId: string | null
   search: string
+  /** Server full-text-search results (null when not searching). */
+  searchResults: Note[] | null
+  searching: boolean
   activeTag: string | null
   loading: boolean
   setSearch: (search: string) => void
@@ -45,6 +48,9 @@ const saveTimers = new Map<string, ReturnType<typeof setTimeout>>()
 // Draft ids whose first insert is in flight (guards against double-insert).
 const inserting = new Set<string>()
 const SAVE_DELAY = 600
+// Debounce for the server full-text search.
+let searchTimer: ReturnType<typeof setTimeout> | undefined
+const SEARCH_DELAY = 300
 
 function isEmpty(n: Note) {
   return !n.title.trim() && !n.content.trim()
@@ -138,10 +144,32 @@ export const useNotes = create<NotesState>((set, get) => {
     notes: [],
     currentId: null,
     search: '',
+    searchResults: null,
+    searching: false,
     activeTag: null,
     loading: false,
 
-    setSearch: (search) => set({ search }),
+    setSearch: (search) => {
+      set({ search })
+      clearTimeout(searchTimer)
+      const q = search.trim()
+      if (!q) {
+        set({ searchResults: null, searching: false })
+        return
+      }
+      set({ searching: true })
+      searchTimer = setTimeout(() => {
+        void api
+          .searchNotes(q)
+          .then((rows) => {
+            // Ignore stale responses if the query changed meanwhile.
+            if (get().search.trim() === q) {
+              set({ searchResults: rows, searching: false })
+            }
+          })
+          .catch(() => set({ searching: false }))
+      }, SEARCH_DELAY)
+    },
 
     setActiveTag: (activeTag) => set({ activeTag }),
 
@@ -166,7 +194,15 @@ export const useNotes = create<NotesState>((set, get) => {
       saveTimers.forEach((t) => clearTimeout(t))
       saveTimers.clear()
       inserting.clear()
-      set({ notes: [], currentId: null, search: '', activeTag: null })
+      clearTimeout(searchTimer)
+      set({
+        notes: [],
+        currentId: null,
+        search: '',
+        searchResults: null,
+        searching: false,
+        activeTag: null,
+      })
     },
 
     flush: (id) => {
@@ -343,24 +379,18 @@ export const useNotes = create<NotesState>((set, get) => {
 })
 
 /**
- * Notes filtered by `search` + `activeTag`, sorted pinned-first then by recency.
+ * Filter a note list by `activeTag` and sort pinned-first then by recency.
+ * Text search is done server-side (see `searchNotes`); pass the appropriate
+ * base list (all notes, or the search results).
  * Pure helper — call it inside a `useMemo`, never as a Zustand selector
  * (it returns a fresh array, which would loop in useSyncExternalStore).
  */
 export function selectVisibleNotes(
   notes: Note[],
-  search: string,
   activeTag: string | null,
 ): Note[] {
-  const q = search.toLowerCase().trim()
   return notes
     .filter((n) => !activeTag || n.tags.includes(activeTag))
-    .filter(
-      (n) =>
-        !q ||
-        n.title.toLowerCase().includes(q) ||
-        n.content.toLowerCase().includes(q),
-    )
     .sort(
       (a, b) => Number(b.pinned) - Number(a.pinned) || b.updated - a.updated,
     )

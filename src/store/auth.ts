@@ -1,6 +1,10 @@
 import { create } from 'zustand'
 import type { Session, User } from '@supabase/supabase-js'
 import { supabase } from '@/services/supabase'
+import { ROUTES } from '@/constants/routes'
+
+/** Absolute URL of the notes app — where auth redirects should land. */
+const appUrl = () => window.location.origin + ROUTES.app
 
 interface AuthState {
   session: Session | null
@@ -74,9 +78,9 @@ export const useAuth = create<AuthState>((set) => ({
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
-      // Confirmation link returns to the current app origin (must be allowed
-      // in Supabase → Auth → URL Configuration → Redirect URLs).
-      options: { emailRedirectTo: window.location.origin },
+      // Confirmation link returns straight to the app (must be allowed in
+      // Supabase → Auth → URL Configuration → Redirect URLs).
+      options: { emailRedirectTo: appUrl() },
     })
     if (error) throw error
     // With "Confirm email" on, Supabase hides the "already registered" case to
@@ -90,9 +94,9 @@ export const useAuth = create<AuthState>((set) => ({
   signInWithProvider: async (provider) => {
     const { error } = await supabase.auth.signInWithOAuth({
       provider,
-      // Return to the app origin (must be in Supabase → Auth → URL
+      // Return straight to the app (must be in Supabase → Auth → URL
       // Configuration → Redirect URLs).
-      options: { redirectTo: window.location.origin },
+      options: { redirectTo: appUrl() },
     })
     if (error) throw error
   },

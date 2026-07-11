@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { Eye, EyeOff, Info, Moon, Sparkles, Sun } from 'lucide-react'
 import { toast } from 'sonner'
 import { useAuth } from '@/store/auth'
@@ -17,7 +17,7 @@ import {
 import { VantaBackground } from '@/components/common/VantaBackground'
 import { ROUTES } from '@/constants/routes'
 
-type Mode = 'signin' | 'signup' | 'reset'
+export type AuthMode = 'signin' | 'signup' | 'reset'
 
 // Google's multi-color "G" mark (not available in lucide).
 function GoogleIcon({ className }: { className?: string }) {
@@ -54,14 +54,14 @@ function GithubIcon({ className }: { className?: string }) {
   )
 }
 
-export function Login() {
+export function Login({ mode }: { mode: AuthMode }) {
   const { theme, toggle } = useTheme()
+  const navigate = useNavigate()
   const signIn = useAuth((s) => s.signIn)
   const signUp = useAuth((s) => s.signUp)
   const resetPassword = useAuth((s) => s.resetPassword)
   const signInWithProvider = useAuth((s) => s.signInWithProvider)
 
-  const [mode, setMode] = useState<Mode>('signin')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -95,7 +95,7 @@ export function Login() {
         toast.success(
           'Nếu email đã đăng ký, liên kết đặt lại mật khẩu đã được gửi. Vui lòng kiểm tra hộp thư.',
         )
-        setMode('signin')
+        navigate(ROUTES.login)
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : ''
@@ -143,7 +143,7 @@ export function Login() {
           size="icon"
           className="absolute top-3 left-3 rounded-xl text-muted-foreground"
         >
-          <Link to={ROUTES.about} aria-label="Giới thiệu & tính năng">
+          <Link to={ROUTES.home} aria-label="Giới thiệu & tính năng">
             <Info className="size-4" />
           </Link>
         </Button>
@@ -193,7 +193,7 @@ export function Login() {
                   {mode === 'signin' && (
                     <button
                       type="button"
-                      onClick={() => setMode('reset')}
+                      onClick={() => navigate(ROUTES.forgotPassword)}
                       className="text-xs font-medium text-primary hover:underline"
                     >
                       Quên mật khẩu?
@@ -272,27 +272,23 @@ export function Login() {
 
           <p className="mt-4 text-center text-sm text-muted-foreground">
             {mode === 'reset' ? (
-              <button
-                type="button"
-                onClick={() => setMode('signin')}
+              <Link
+                to={ROUTES.login}
                 className="font-medium text-primary hover:underline"
               >
                 Quay lại đăng nhập
-              </button>
+              </Link>
             ) : (
               <>
                 {mode === 'signin'
                   ? 'Chưa có tài khoản? '
                   : 'Đã có tài khoản? '}
-                <button
-                  type="button"
-                  onClick={() =>
-                    setMode(mode === 'signin' ? 'signup' : 'signin')
-                  }
+                <Link
+                  to={mode === 'signin' ? ROUTES.register : ROUTES.login}
                   className="font-medium text-primary hover:underline"
                 >
                   {mode === 'signin' ? 'Đăng ký' : 'Đăng nhập'}
-                </button>
+                </Link>
               </>
             )}
           </p>

@@ -120,7 +120,7 @@ export function Features() {
                 size="lg"
                 className="btn-shine grad-btn h-auto rounded-xl px-8 py-4 text-base font-semibold text-white shadow-lift"
               >
-                <Link to={ROUTES.home}>
+                <Link to={ROUTES.app}>
                   <span className="animate-text-slide inline-flex items-center gap-1.5">
                     Tạo ghi chú đầu tiên
                     <ArrowRight className="size-4" />

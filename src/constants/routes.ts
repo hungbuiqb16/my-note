@@ -3,8 +3,13 @@
  * import them instead of hardcoding path strings across the app.
  */
 export const ROUTES = {
+  /** Public landing / about page. */
   home: '/',
-  about: '/about',
+  login: '/login',
+  register: '/register',
+  forgotPassword: '/forgot-password',
+  /** The authenticated notes app. */
+  app: '/app',
   /** Route pattern for the public share page (param: `shareId`). */
   share: '/share/:shareId',
 } as const

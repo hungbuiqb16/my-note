@@ -39,11 +39,13 @@ Hay bị quên → link reset mật khẩu / xác nhận email sẽ về `localh
 Dashboard → **Authentication → URL Configuration**:
 
 - **Site URL**: domain production, ví dụ `https://noteflow.vercel.app`.
-- **Redirect URLs**: thêm domain production **và** `https://*.vercel.app`
-  (để preview deployment cũng đăng nhập / reset được).
+- **Redirect URLs**: thêm domain production **và** `https://*.vercel.app`. Nên
+  dùng dạng bao trọn path (`https://your-domain/**`, `http://localhost:5174/**`)
+  vì OAuth / xác nhận email hiện `redirectTo` về **`/app`** — nếu chỉ khai báo
+  domain trần (không có path) thì URL `.../app` có thể bị chặn.
 
-Lý do: `resetPassword` dùng `redirectTo: window.location.origin`, và link xác nhận
-email đều quay về app.
+Lý do: đăng nhập OAuth và link xác nhận email dùng `redirectTo` = `origin + /app`;
+link đặt lại mật khẩu quay về app và được màn hình "Đặt lại mật khẩu" tiếp nhận.
 
 ### 2.1 Đăng nhập OAuth (Google / GitHub) — nếu dùng
 

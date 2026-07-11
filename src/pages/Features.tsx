@@ -46,7 +46,7 @@ export function Features() {
 
   return (
     <div className="min-h-screen">
-      <div className="mx-auto max-w-5xl px-5 pt-4 pb-10 md:pt-5 md:pb-16">
+      <div className="mx-auto max-w-5xl px-5 pt-4 pb-6 md:pt-5 md:pb-8">
         {/* Top bar */}
         <div className="flex items-center justify-between">
           <Link

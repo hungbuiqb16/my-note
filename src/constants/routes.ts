@@ -8,6 +8,7 @@ export const ROUTES = {
   login: '/login',
   register: '/register',
   forgotPassword: '/forgot-password',
+  resetPassword: '/reset-password',
   /** The authenticated notes app. */
   app: '/app',
   /** Route pattern for the public share page (param: `shareId`). */

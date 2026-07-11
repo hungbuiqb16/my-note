@@ -44,8 +44,8 @@ Dashboard → **Authentication → URL Configuration**:
   vì OAuth / xác nhận email hiện `redirectTo` về **`/app`** — nếu chỉ khai báo
   domain trần (không có path) thì URL `.../app` có thể bị chặn.
 
-Lý do: đăng nhập OAuth và link xác nhận email dùng `redirectTo` = `origin + /app`;
-link đặt lại mật khẩu quay về app và được màn hình "Đặt lại mật khẩu" tiếp nhận.
+Lý do: OAuth và xác nhận email dùng `redirectTo` = `origin + /app`; link đặt lại
+mật khẩu dùng `origin + /reset-password`. Khai `/**` sẽ bao hết các path này.
 
 ### 2.1 Đăng nhập OAuth (Google / GitHub) — nếu dùng
 

@@ -44,36 +44,28 @@ function AppRoute() {
 
 function App() {
   const init = useAuth((s) => s.init)
-  const recovery = useAuth((s) => s.recovery)
 
   useEffect(() => init(), [init])
 
   return (
     <>
       <div className="mesh" />
-      {/* A recovery link takes over the whole app until a new password is set. */}
-      {recovery ? (
-        <ResetPassword />
-      ) : (
-        <Suspense fallback={<Splash />}>
-          <Routes>
-            <Route path={ROUTES.home} element={<Landing />} />
-            <Route path={ROUTES.login} element={<AuthRoute mode="signin" />} />
-            <Route
-              path={ROUTES.register}
-              element={<AuthRoute mode="signup" />}
-            />
-            <Route
-              path={ROUTES.forgotPassword}
-              element={<AuthRoute mode="reset" />}
-            />
-            <Route path={ROUTES.app} element={<AppRoute />} />
-            <Route path={ROUTES.share} element={<PublicNote />} />
-            {/* Unknown paths → back to the landing. */}
-            <Route path="*" element={<Navigate to={ROUTES.home} replace />} />
-          </Routes>
-        </Suspense>
-      )}
+      <Suspense fallback={<Splash />}>
+        <Routes>
+          <Route path={ROUTES.home} element={<Landing />} />
+          <Route path={ROUTES.login} element={<AuthRoute mode="signin" />} />
+          <Route path={ROUTES.register} element={<AuthRoute mode="signup" />} />
+          <Route
+            path={ROUTES.forgotPassword}
+            element={<AuthRoute mode="reset" />}
+          />
+          <Route path={ROUTES.resetPassword} element={<ResetPassword />} />
+          <Route path={ROUTES.app} element={<AppRoute />} />
+          <Route path={ROUTES.share} element={<PublicNote />} />
+          {/* Unknown paths → back to the landing. */}
+          <Route path="*" element={<Navigate to={ROUTES.home} replace />} />
+        </Routes>
+      </Suspense>
       <Toaster richColors position="top-center" />
     </>
   )

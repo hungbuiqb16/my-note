@@ -1,8 +1,10 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Eye, EyeOff, Moon, Sparkles, Sun } from 'lucide-react'
 import { toast } from 'sonner'
 import { useAuth } from '@/store/auth'
 import { useTheme } from '@/hooks/useTheme'
+import { ROUTES } from '@/constants/routes'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -18,8 +20,8 @@ import { VantaBackground } from '@/components/common/VantaBackground'
 /** Shown after clicking a password-recovery email link (auth.recovery === true). */
 export function ResetPassword() {
   const { theme, toggle } = useTheme()
+  const navigate = useNavigate()
   const updatePassword = useAuth((s) => s.updatePassword)
-  const endRecovery = useAuth((s) => s.endRecovery)
 
   const [password, setPassword] = useState('')
   const [confirm, setConfirm] = useState('')
@@ -40,12 +42,14 @@ export function ResetPassword() {
     try {
       await updatePassword(password)
       toast.success('Đã đặt lại mật khẩu')
-      endRecovery() // drops into the app with the (now recovered) session
+      navigate(ROUTES.app) // into the app with the recovered session
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Có lỗi xảy ra')
       setSaving(false)
     }
   }
+
+  const skip = () => navigate(ROUTES.app)
 
   return (
     <div className="flex min-h-screen items-center justify-center p-4">
@@ -132,7 +136,7 @@ export function ResetPassword() {
           <p className="mt-4 text-center text-sm text-muted-foreground">
             <button
               type="button"
-              onClick={endRecovery}
+              onClick={skip}
               className="font-medium text-primary hover:underline"
             >
               Để sau

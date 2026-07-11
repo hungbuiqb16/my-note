@@ -129,7 +129,7 @@
     @apply bg-background text-foreground antialiased;
   }
   html {
-    @apply font-sans;
+    @apply scroll-smooth font-sans;
   }
 }
 
@@ -228,6 +228,9 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto !important;
+  }
   * {
     transition: none !important;
     animation: none !important;

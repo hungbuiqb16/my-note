@@ -40,7 +40,8 @@
       "Bash(wsl.exe -d Ubuntu-24.04 -- bash -lc 'cd ~/personal/my-note && for n in EmptyState NoteListItem Highlight scroll-area textarea card avatar separator label markdown text time; do c=$\\(grep -rEl \"\\([/\\\\\"]$n[\\\\\"'\\\\'' ]|/$n\\)\" src --include=*.ts --include=*.tsx | grep -v -E \"/$n\\\\.\\(ts|tsx\\)$\" | wc -l\\); echo \"$n -> $c refs\"; done')",
       "Bash(wsl.exe -d Ubuntu-24.04 -- bash -lc 'cd ~/personal/my-note && for f in alert-dialog avatar button card dialog dropdown-menu input label separator sonner tooltip; do n=$\\(grep -rl \"ui/$f\" src --include=*.ts --include=*.tsx | grep -v \"ui/$f.tsx\" | wc -l\\); echo \"$f: $n\"; done')",
       "Bash(wsl.exe -d Ubuntu-24.04 -- bash -lc 'cd ~/personal/my-note && rm -v src/components/common/EmptyState.tsx src/components/common/NoteListItem.tsx src/components/ui/scroll-area.tsx src/components/ui/textarea.tsx')",
-      "Bash(wsl.exe -d Ubuntu-24.04 -- bash -lc 'export PATH=\"$HOME/.nvm/versions/node/v22.21.1/bin:$PATH\"; cd ~/personal/my-note && npx eslint src/components/common/AllNotes.tsx 2>&1 | tail -5; echo done')"
+      "Bash(wsl.exe -d Ubuntu-24.04 -- bash -lc 'export PATH=\"$HOME/.nvm/versions/node/v22.21.1/bin:$PATH\"; cd ~/personal/my-note && npx eslint src/components/common/AllNotes.tsx 2>&1 | tail -5; echo done')",
+      "Bash(wsl.exe -d Ubuntu-24.04 -- bash -lc 'export PATH=\"$HOME/.nvm/versions/node/v22.21.1/bin:$PATH\"; cd ~/personal/my-note && npx eslint src/components/ui/dialog.tsx 2>&1 | tail -5; echo done')"
     ]
   }
 }

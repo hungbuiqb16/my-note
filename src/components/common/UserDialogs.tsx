@@ -414,9 +414,11 @@ export function AboutDialog({ open, onOpenChange }: DialogProps) {
           <p className="text-xs text-muted-foreground">Phiên bản 1.0.0 by Hùng Bùi</p>
         </div>
 
-        <DialogFooter>
+        <DialogFooter className="-mt-2">
           <DialogClose asChild>
-            <Button variant="secondary">Đóng</Button>
+            <Button variant="secondary" size="sm">
+              Đóng
+            </Button>
           </DialogClose>
         </DialogFooter>
       </DialogContent>

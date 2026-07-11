@@ -11,6 +11,11 @@ const PublicNote = lazy(() =>
   import('@/pages/PublicNote').then((m) => ({ default: m.PublicNote })),
 )
 
+// Public "About" page listing every feature (no auth required).
+const About = lazy(() =>
+  import('@/pages/Features').then((m) => ({ default: m.Features })),
+)
+
 function Splash() {
   return (
     <div className="flex min-h-screen items-center justify-center">
@@ -38,6 +43,7 @@ function App() {
       <Suspense fallback={<Splash />}>
         <Routes>
           <Route path="/share/:shareId" element={<PublicNote />} />
+          <Route path="/about" element={<About />} />
           <Route path="*" element={<MainApp />} />
         </Routes>
       </Suspense>

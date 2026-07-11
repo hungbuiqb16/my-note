@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { Eye, EyeOff, Moon, Sparkles, Sun } from 'lucide-react'
+import { Link } from 'react-router-dom'
+import { Eye, EyeOff, Info, Moon, Sparkles, Sun } from 'lucide-react'
 import { toast } from 'sonner'
 import { useAuth } from '@/store/auth'
 import { useTheme } from '@/hooks/useTheme'
@@ -130,6 +131,16 @@ export function Login() {
     <div className="flex min-h-screen items-center justify-center p-4">
       <VantaBackground theme={theme} />
       <Card className="glass relative w-full max-w-sm border-black/5 shadow-lift dark:border-white/5">
+        <Button
+          asChild
+          variant="ghost"
+          size="icon"
+          className="absolute top-3 left-3 rounded-xl text-muted-foreground"
+        >
+          <Link to="/about" aria-label="Giới thiệu & tính năng">
+            <Info className="size-4" />
+          </Link>
+        </Button>
         <Button
           variant="ghost"
           size="icon"

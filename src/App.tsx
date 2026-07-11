@@ -42,6 +42,15 @@ function AppRoute() {
   return session ? <AppLayout /> : <Navigate to={ROUTES.login} replace />
 }
 
+// Reset-password screen: only reachable with a session (the recovery link
+// establishes one). Typing the URL while signed out bounces to login.
+function ResetRoute() {
+  const ready = useAuth((s) => s.ready)
+  const session = useAuth((s) => s.session)
+  if (!ready) return <Splash />
+  return session ? <ResetPassword /> : <Navigate to={ROUTES.login} replace />
+}
+
 function App() {
   const init = useAuth((s) => s.init)
 
@@ -59,7 +68,7 @@ function App() {
             path={ROUTES.forgotPassword}
             element={<AuthRoute mode="reset" />}
           />
-          <Route path={ROUTES.resetPassword} element={<ResetPassword />} />
+          <Route path={ROUTES.resetPassword} element={<ResetRoute />} />
           <Route path={ROUTES.app} element={<AppRoute />} />
           <Route path={ROUTES.share} element={<PublicNote />} />
           {/* Unknown paths → back to the landing. */}

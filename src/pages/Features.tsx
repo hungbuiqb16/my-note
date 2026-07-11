@@ -48,8 +48,9 @@ const CHECKLIST = [
   'Markdown Editor',
   'Tag thông minh',
   'Đồng bộ thời gian thực',
-  'Mã hóa End-to-End',
-  'Chia sẻ ghi chú',
+  'Khóa ghi chú bằng mật khẩu',
+  'Tạo liên kết chia sẻ ghi chú',
+  'Hỗ trợ Import/Export ghi chú',
 ]
 
 export function Features() {
@@ -99,7 +100,7 @@ export function Features() {
         {/* Hero */}
         <section className="mt-6 grid items-center gap-14 lg:mt-10 lg:grid-cols-2">
           <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/10 px-4 py-1.5 text-sm font-medium text-primary">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-500/30 bg-amber-500/10 px-4 py-1.5 text-sm font-medium text-amber-600 dark:text-amber-400">
               <Sparkles className="size-4" />
               Ghi chú nhanh, gọn, riêng tư
             </span>
@@ -117,20 +118,14 @@ export function Features() {
               <Button
                 asChild
                 size="lg"
-                className="grad-btn h-auto rounded-xl px-8 py-4 text-base font-semibold text-white shadow-lift"
+                className="btn-shine grad-btn h-auto rounded-xl px-8 py-4 text-base font-semibold text-white shadow-lift"
               >
                 <Link to={ROUTES.home}>
-                  Tạo ghi chú đầu tiên
-                  <ArrowRight className="size-4" />
+                  <span className="animate-text-slide inline-flex items-center gap-1.5">
+                    Tạo ghi chú đầu tiên
+                    <ArrowRight className="size-4" />
+                  </span>
                 </Link>
-              </Button>
-              <Button
-                asChild
-                variant="secondary"
-                size="lg"
-                className="h-auto rounded-xl px-8 py-4 text-base font-semibold"
-              >
-                <a href="#tinh-nang">Xem tính năng</a>
               </Button>
             </div>
 
@@ -152,10 +147,11 @@ export function Features() {
           </div>
 
           {/* Editor-like note preview */}
-          <div className="animate-in fade-in slide-in-from-bottom-4 rounded-3xl border border-black/5 bg-card p-6 shadow-lift delay-150 duration-700 md:p-8 dark:border-white/10">
-            <h3 className="font-display text-2xl font-bold tracking-tight">
-              💡 Ý tưởng startup
-            </h3>
+          <div className="animate-in fade-in slide-in-from-bottom-4 delay-150 duration-700">
+            <div className="animate-float rounded-3xl border border-black/5 bg-card p-6 shadow-lift md:p-8 dark:border-white/10">
+              <h3 className="font-display text-2xl font-bold tracking-tight">
+                💡 Ý tưởng startup
+              </h3>
             <div className="mt-3 flex items-center gap-2">
               <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 py-0.5 pr-1.5 pl-2 text-xs font-medium text-primary">
                 hnote
@@ -170,13 +166,14 @@ export function Features() {
             <ul className="space-y-3 text-sm">
               {CHECKLIST.map((item) => (
                 <li key={item} className="flex items-center gap-2.5">
-                  <span className="grid size-4 shrink-0 place-items-center rounded-[5px] bg-primary text-white">
+                  <span className="grid size-4 shrink-0 place-items-center rounded-[5px] bg-emerald-500 text-white">
                     <Check className="size-3" strokeWidth={3} />
                   </span>
                   {item}
                 </li>
               ))}
             </ul>
+            </div>
           </div>
         </section>
 
@@ -191,7 +188,7 @@ export function Features() {
 
           <div className="mt-12 grid gap-8 lg:grid-cols-3">
             {/* Tall gradient card */}
-            <div className="grad-btn rounded-3xl p-8 text-white shadow-lift lg:row-span-2">
+            <div className="grad-btn rounded-3xl p-8 text-white shadow-lift transition-all hover:-translate-y-1 lg:row-span-2">
               <div className="grid size-12 place-items-center rounded-2xl bg-white/15">
                 <PenLine className="size-6" />
               </div>
@@ -233,7 +230,7 @@ export function Features() {
               </p>
             </div>
 
-            <div className="rounded-3xl border border-black/5 bg-card p-8 shadow-soft lg:col-span-2 dark:border-white/10">
+            <div className="rounded-3xl border border-black/5 bg-card p-8 shadow-soft transition-all hover:-translate-y-1 hover:shadow-lift lg:col-span-2 dark:border-white/10">
               <div className="flex items-center justify-between gap-6">
                 <div>
                   <h3 className="font-display text-xl font-bold">

@@ -9,10 +9,12 @@ import {
   Menu,
   Pin,
   PinOff,
+  Search,
   Settings,
   Share2,
   Trash2,
   Upload,
+  X,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { selectVisibleNotes, useNotes } from '@/store/notes'
@@ -20,6 +22,7 @@ import { useAuth } from '@/store/auth'
 import { exportNotes, importNotes } from '@/services/notes'
 import { cleanupOrphanImages } from '@/services/storage'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -54,6 +57,7 @@ interface AllNotesProps {
 export function AllNotes({ className, onOpen, onOpenSidebar }: AllNotesProps) {
   const notes = useNotes((s) => s.notes)
   const search = useNotes((s) => s.search)
+  const setSearch = useNotes((s) => s.setSearch)
   const searchResults = useNotes((s) => s.searchResults)
   const searching = useNotes((s) => s.searching)
   const activeTag = useNotes((s) => s.activeTag)
@@ -71,6 +75,7 @@ export function AllNotes({ className, onOpen, onOpenSidebar }: AllNotesProps) {
 
   const importRef = useRef<HTMLInputElement>(null)
   const [dataBusy, setDataBusy] = useState(false)
+  const [searchOpen, setSearchOpen] = useState(false)
 
   const handleExport = async () => {
     setDataBusy(true)
@@ -208,19 +213,7 @@ export function AllNotes({ className, onOpen, onOpenSidebar }: AllNotesProps) {
         className,
       )}
     >
-      <div className="flex items-center justify-between gap-2 border-b border-black/5 px-4 py-3 md:px-8 dark:border-white/5">
-        <button
-          type="button"
-          onClick={onOpenSidebar}
-          aria-label="Mở menu"
-          className="text-muted-foreground md:hidden"
-        >
-          <Menu className="size-5" />
-        </button>
-        <h2 className="font-display text-lg font-bold tracking-tight">
-          Tất cả ghi chú
-        </h2>
-
+      <div className="flex items-center gap-2 border-b border-black/5 px-4 py-3 md:px-8 dark:border-white/5">
         <input
           ref={importRef}
           type="file"
@@ -228,6 +221,54 @@ export function AllNotes({ className, onOpen, onOpenSidebar }: AllNotesProps) {
           hidden
           onChange={handleImport}
         />
+
+        {searchOpen ? (
+          <div className="relative flex-1">
+            <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              autoFocus
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Tìm kiếm ghi chú…"
+              className="h-auto rounded-xl py-2 pr-9 pl-9"
+            />
+            <button
+              type="button"
+              onClick={() => {
+                setSearch('')
+                setSearchOpen(false)
+              }}
+              aria-label="Đóng tìm kiếm"
+              className="absolute top-1/2 right-2.5 grid size-6 -translate-y-1/2 place-items-center rounded-full text-muted-foreground transition-colors hover:bg-black/[.06] hover:text-foreground dark:hover:bg-white/[.08]"
+            >
+              <X className="size-3.5" />
+            </button>
+          </div>
+        ) : (
+          <>
+            <button
+              type="button"
+              onClick={onOpenSidebar}
+              aria-label="Mở menu"
+              className="text-muted-foreground md:hidden"
+            >
+              <Menu className="size-5" />
+            </button>
+            <h2 className="flex-1 font-display text-lg font-bold tracking-tight">
+              Tất cả ghi chú
+            </h2>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setSearchOpen(true)}
+              aria-label="Tìm kiếm"
+              className="rounded-xl text-muted-foreground md:hidden"
+            >
+              <Search className="size-4" />
+            </Button>
+          </>
+        )}
+
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
@@ -339,9 +380,9 @@ export function AllNotes({ className, onOpen, onOpenSidebar }: AllNotesProps) {
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button
-                        variant="secondary"
+                        variant="ghost"
                         size="icon-sm"
-                        className="rounded-lg shadow-sm"
+                        className="rounded-lg text-muted-foreground shadow-none focus-visible:border-transparent focus-visible:ring-0"
                         aria-label="Tùy chọn"
                       >
                         <EllipsisVertical />

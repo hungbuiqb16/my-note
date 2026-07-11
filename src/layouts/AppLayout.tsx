@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react'
+import { Plus } from 'lucide-react'
+import { cn } from '@/lib/utils'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { Sidebar } from '@/components/common/Sidebar'
 import { Editor } from '@/components/common/Editor'
@@ -25,6 +27,7 @@ export function AppLayout() {
   const load = useNotes((s) => s.load)
   const clear = useNotes((s) => s.clear)
   const discardIfEmpty = useNotes((s) => s.discardIfEmpty)
+  const subscribeRealtime = useNotes((s) => s.subscribeRealtime)
   const loadVault = useVault((s) => s.loadMeta)
   const resetVault = useVault((s) => s.reset)
   const currentNote = notes.find((n) => n.id === currentId) ?? null
@@ -53,11 +56,13 @@ export function AppLayout() {
   useEffect(() => {
     void load()
     void loadVault()
+    const unsubscribe = subscribeRealtime()
     return () => {
+      unsubscribe()
       clear()
       resetVault()
     }
-  }, [load, clear, loadVault, resetVault])
+  }, [load, clear, loadVault, resetVault, subscribeRealtime])
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
@@ -71,13 +76,26 @@ export function AppLayout() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  const mainClass = mobileView === 'main' ? 'flex' : 'hidden md:flex'
+  // Main is always visible; on mobile the sidebar floats over it as a drawer.
+  const mainClass = 'flex'
 
   return (
     <TooltipProvider delayDuration={300}>
       <div className="flex h-screen overflow-hidden p-0 md:gap-4 md:p-4">
+        {/* Transparent backdrop: shows content behind, tap to close (mobile). */}
+        {mobileView === 'sidebar' && (
+          <button
+            type="button"
+            aria-label="Đóng menu"
+            onClick={() => setMobileView('main')}
+            className="fixed inset-0 z-20 md:hidden"
+          />
+        )}
         <Sidebar
-          className={mobileView === 'sidebar' ? 'flex' : 'hidden md:flex'}
+          className={cn(
+            'fixed inset-y-0 left-0 z-30 transition-transform duration-300 ease-out md:static md:z-auto md:translate-x-0',
+            mobileView === 'sidebar' ? 'translate-x-0' : '-translate-x-full',
+          )}
           theme={theme}
           gridActive={!showingEditor}
           onToggleTheme={toggle}
@@ -99,6 +117,17 @@ export function AppLayout() {
           />
         )}
       </div>
+
+      {!showingEditor && mobileView === 'main' && (
+        <button
+          type="button"
+          onClick={handleCreate}
+          aria-label="Ghi chú mới"
+          className="grad-btn fixed right-6 bottom-6 z-20 grid size-14 place-items-center rounded-full text-white shadow-lift transition-transform active:scale-95"
+        >
+          <Plus className="size-6" strokeWidth={2.5} />
+        </button>
+      )}
     </TooltipProvider>
   )
 }

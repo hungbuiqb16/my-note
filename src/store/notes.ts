@@ -1,6 +1,8 @@
 import { create } from 'zustand'
 import { toast } from 'sonner'
-import type { Note } from '@/types/note'
+import type { RealtimePostgresChangesPayload } from '@supabase/supabase-js'
+import type { Note, NoteRow } from '@/types/note'
+import { supabase } from '@/services/supabase'
 import { useAuth } from '@/store/auth'
 import * as api from '@/services/notes'
 
@@ -36,6 +38,8 @@ interface NotesState {
   flush: (id: string) => void
   /** Persist every pending change immediately. */
   flushAll: () => void
+  /** Subscribe to realtime changes for this user; returns an unsubscribe fn. */
+  subscribeRealtime: () => () => void
 }
 
 /** True while any debounced write or first-insert is still in flight. */
@@ -214,6 +218,79 @@ export const useNotes = create<NotesState>((set, get) => {
       for (const id of [...saveTimers.keys()]) {
         cancelTimer(id)
         persist(id)
+      }
+    },
+
+    subscribeRealtime: () => {
+      const userId = useAuth.getState().user?.id
+      if (!userId) return () => {}
+      const token = useAuth.getState().session?.access_token
+      if (token) supabase.realtime.setAuth(token)
+
+      const onChange = (payload: RealtimePostgresChangesPayload<NoteRow>) => {
+        if (payload.eventType === 'DELETE') {
+          const rid = (payload.old as Partial<NoteRow>).id
+          if (!rid) return
+          set((s) => {
+            const target = s.notes.find(
+              (n) => n.id === rid || n.remoteId === rid,
+            )
+            if (!target) return s
+            const notes = s.notes.filter((n) => n !== target)
+            return {
+              notes,
+              currentId:
+                s.currentId === target.id
+                  ? (notes[0]?.id ?? null)
+                  : s.currentId,
+            }
+          })
+          return
+        }
+
+        const row = payload.new as NoteRow
+        const incoming = api.rowToNote(row)
+        set((s) => {
+          const idx = s.notes.findIndex(
+            (n) => n.id === row.id || n.remoteId === row.id,
+          )
+          if (idx === -1) return { notes: [incoming, ...s.notes] }
+
+          const local = s.notes[idx]
+          // Don't clobber a note that's being actively edited here.
+          if (
+            s.currentId === local.id &&
+            (saveTimers.has(local.id) || inserting.has(local.id))
+          ) {
+            return s
+          }
+          const notes = s.notes.slice()
+          notes[idx] = {
+            ...incoming,
+            id: local.id,
+            remoteId: local.remoteId ?? incoming.id,
+            draft: false,
+          }
+          return { notes }
+        })
+      }
+
+      const channel = supabase
+        .channel('notes-sync')
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'notes',
+            filter: `user_id=eq.${userId}`,
+          },
+          onChange,
+        )
+        .subscribe()
+
+      return () => {
+        void supabase.removeChannel(channel)
       }
     },
 

@@ -22,7 +22,9 @@
       "Bash(wsl.exe -d Ubuntu-24.04 -- bash -lc 'export PATH=\"$HOME/.nvm/versions/node/v22.21.1/bin:$PATH\"; cd ~/personal/my-note && npx prettier --write \"src/components/common/AllNotes.tsx\" \"src/components/common/UserDialogs.tsx\" >/dev/null 2>&1; npm run build 2>&1 | grep -E \"error|Error|built\" | tail -6; echo \"=== LINT ===\"; npx eslint src >/tmp/l.txt 2>&1; echo \"lint_exit=$?\"; cat /tmp/l.txt')",
       "Bash(wsl.exe -d Ubuntu-24.04 -- bash -lc 'export PATH=\"$HOME/.nvm/versions/node/v22.21.1/bin:$PATH\"; cd ~/personal/my-note && npm run build 2>&1 | grep -E \"error|Error|built\" | tail -5; npx eslint src >/tmp/l.txt 2>&1; echo \"lint_exit=$?\"; cat /tmp/l.txt')",
       "Bash(wsl.exe -d Ubuntu-24.04 -- bash -lc 'export PATH=\"$HOME/.nvm/versions/node/v22.21.1/bin:$PATH\"; cd ~/personal/my-note && npx prettier --write \"src/**/*.{ts,tsx}\" >/dev/null 2>&1; npm run build 2>&1 | grep -E \"error|Error|built\" | tail -6; echo \"=== LINT ===\"; npx eslint src >/tmp/l.txt 2>&1; echo \"lint_exit=$?\"; cat /tmp/l.txt')",
-      "Bash(wsl.exe -d Ubuntu-24.04 -- bash -lc 'cd ~/personal/my-note && bash scripts/check-fts.sh; rm -f scripts/check-fts.sh && rmdir scripts 2>/dev/null || true')"
+      "Bash(wsl.exe -d Ubuntu-24.04 -- bash -lc 'cd ~/personal/my-note && bash scripts/check-fts.sh; rm -f scripts/check-fts.sh && rmdir scripts 2>/dev/null || true')",
+      "Bash(wsl.exe -d Ubuntu-24.04 -- bash -lc 'export PATH=\"$HOME/.nvm/versions/node/v22.21.1/bin:$PATH\"; cd ~/personal/my-note && npx prettier --write \"src/store/notes.ts\" \"src/layouts/AppLayout.tsx\" \"src/services/notes.ts\" >/dev/null 2>&1; npm run build 2>&1 | grep -E \"error|Error|built\" | tail -8; echo \"=== LINT ===\"; npx eslint src >/tmp/l.txt 2>&1; echo \"lint_exit=$?\"; cat /tmp/l.txt')",
+      "Bash(wsl.exe -d Ubuntu-24.04 -- bash -lc 'export PATH=\"$HOME/.nvm/versions/node/v22.21.1/bin:$PATH\"; cd ~/personal/my-note && npm run build 2>&1 | grep -E \"error|Error|built\" | tail -4; npx eslint src >/tmp/l.txt 2>&1; echo \"lint_exit=$?\"; cat /tmp/l.txt')"
     ]
   }
 }

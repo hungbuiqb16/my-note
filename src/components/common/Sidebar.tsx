@@ -58,7 +58,7 @@ export function Sidebar({
   return (
     <aside
       className={cn(
-        'glass flex h-full w-full flex-shrink-0 flex-col border-r border-black/5 md:w-72 md:rounded-2xl md:border md:shadow-soft lg:w-80 dark:border-white/5',
+        'glass flex h-full w-1/2 flex-shrink-0 flex-col border-r border-black/5 md:w-72 md:rounded-2xl md:border md:shadow-soft lg:w-80 dark:border-white/5',
         className,
       )}
     >
@@ -99,7 +99,7 @@ export function Sidebar({
           Ghi chú mới
         </Button>
 
-        <div className="relative mt-3">
+        <div className="relative mt-3 hidden md:block">
           <Search className="pointer-events-none absolute top-1/2 left-3.5 size-3.5 -translate-y-1/2 text-muted-foreground" />
           <Input
             ref={searchRef}

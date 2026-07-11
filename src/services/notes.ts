@@ -67,6 +67,9 @@ export async function fetchPublicNote(
   }
 }
 
+/** Map a raw DB row to a Note (used by realtime handlers). */
+export { toNote as rowToNote }
+
 /** Server-side full-text search (title + content) for the current user. */
 export async function searchNotes(query: string): Promise<Note[]> {
   const { data, error } = await supabase

@@ -415,10 +415,12 @@ export function AboutDialog({ open, onOpenChange }: DialogProps) {
               Và 7749 tính năng khác đang chờ bạn khám phá! 😉
             </li>
           </ul>
-          <p className="text-xs text-muted-foreground">Phiên bản 1.0.0 by Hùng Bùi</p>
         </div>
 
-        <DialogFooter className="-mt-2">
+        <DialogFooter className="sm:items-center sm:justify-between">
+          <p className="text-xs text-muted-foreground">
+            Phiên bản 1.0.0 by Hùng Bùi
+          </p>
           <DialogClose asChild>
             <Button variant="secondary" size="sm">
               Đóng

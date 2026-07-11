@@ -117,6 +117,7 @@ export function AppLayout() {
             className={mainClass}
             onOpen={openNote}
             onOpenSidebar={() => setMobileView('sidebar')}
+            onCreate={handleCreate}
           />
         )}
       </div>

@@ -7,8 +7,10 @@ import {
   Eraser,
   Lock,
   Menu,
+  NotebookPen,
   Pin,
   PinOff,
+  Plus,
   RotateCcw,
   Search,
   Settings,
@@ -66,6 +68,7 @@ interface AllNotesProps {
   className?: string
   onOpen: (id: string) => void
   onOpenSidebar: () => void
+  onCreate: () => void
 }
 
 // Fraction of the card width to swipe (right) before it triggers delete.
@@ -148,7 +151,7 @@ function NoteCard({
           touchAction: 'pan-y',
           background: dx > 0 ? 'var(--card)' : undefined,
         }}
-        className="relative flex h-44 w-full flex-col rounded-xl border border-black/5 bg-card p-4 text-left transition-all select-none hover:-translate-y-0.5 hover:shadow-lift focus-visible:ring-2 focus-visible:ring-primary dark:border-white/10 dark:bg-white/[.03]"
+        className="relative flex h-44 w-full flex-col rounded-xl border border-black/5 bg-card p-4 text-left transition-all select-none hover:-translate-y-[3px] hover:border-brand-2/60 hover:shadow-lift focus-visible:ring-2 focus-visible:ring-primary dark:border-white/10 dark:bg-white/[.03] dark:hover:border-brand-2/60"
       >
         <div className="flex items-start justify-between gap-2">
           <h3
@@ -266,7 +269,7 @@ function TrashCard({ note, onOpen, onRestore, onRequestPurge }: TrashCardProps) 
       <button
         type="button"
         onClick={() => onOpen(note)}
-        className="relative flex h-44 w-full flex-col rounded-xl border border-black/5 bg-card p-4 text-left transition-all hover:-translate-y-0.5 hover:shadow-lift focus-visible:ring-2 focus-visible:ring-primary dark:border-white/10 dark:bg-white/[.03]"
+        className="relative flex h-44 w-full flex-col rounded-xl border border-black/5 bg-card p-4 text-left transition-all hover:-translate-y-[3px] hover:border-brand-2/60 hover:shadow-lift focus-visible:ring-2 focus-visible:ring-primary dark:border-white/10 dark:bg-white/[.03] dark:hover:border-brand-2/60"
       >
         <div className="flex items-start justify-between gap-2">
           <h3
@@ -319,7 +322,12 @@ function TrashCard({ note, onOpen, onRestore, onRequestPurge }: TrashCardProps) 
   )
 }
 
-export function AllNotes({ className, onOpen, onOpenSidebar }: AllNotesProps) {
+export function AllNotes({
+  className,
+  onOpen,
+  onOpenSidebar,
+  onCreate,
+}: AllNotesProps) {
   const notes = useNotes((s) => s.notes)
   const search = useNotes((s) => s.search)
   const setSearch = useNotes((s) => s.setSearch)
@@ -832,11 +840,34 @@ export function AllNotes({ className, onOpen, onOpenSidebar }: AllNotesProps) {
             Đang tìm kiếm…
           </p>
         ) : visible.length === 0 ? (
-          <p className="py-16 text-center text-sm text-muted-foreground">
-            {isSearching
-              ? 'Không tìm thấy kết quả nào.'
-              : 'Không có ghi chú nào.'}
-          </p>
+          !isSearching && notes.length === 0 ? (
+            <div className="flex flex-col items-center justify-center gap-4 py-20 text-center">
+              <div className="grid size-16 place-items-center rounded-2xl bg-primary/10 text-primary">
+                <NotebookPen className="size-8" />
+              </div>
+              <div className="space-y-1">
+                <h3 className="font-display text-lg font-bold tracking-tight">
+                  Chưa có ghi chú nào
+                </h3>
+                <p className="text-sm whitespace-nowrap text-muted-foreground">
+                  Ghi lại ý tưởng, đoạn code, mật khẩu hoặc bất kỳ điều gì.
+                </p>
+              </div>
+              <Button
+                onClick={onCreate}
+                className="grad-btn h-auto gap-2 rounded-xl py-2.5 font-semibold text-white shadow-lift"
+              >
+                <Plus className="size-4" strokeWidth={2.5} />
+                Ghi chú đầu tiên
+              </Button>
+            </div>
+          ) : (
+            <p className="py-16 text-center text-sm text-muted-foreground">
+              {isSearching
+                ? 'Không tìm thấy kết quả nào.'
+                : 'Không có ghi chú phù hợp.'}
+            </p>
+          )
         ) : (
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {pageItems.map((note) => (

@@ -186,9 +186,6 @@ export function Features() {
             <h2 className="font-display text-3xl font-bold tracking-tight md:text-4xl">
               Tất cả tính năng <span className="grad-text">trong một nơi</span>
             </h2>
-            <p className="mt-3 text-muted-foreground">
-              Không chỉ ghi chú, hnote giúp bạn quản lý kiến thức hiệu quả.
-            </p>
           </div>
 
           <div className="mt-12 grid gap-8 lg:grid-cols-3">
@@ -243,8 +240,7 @@ export function Features() {
                   </h3>
                   <p className="mt-3 font-medium text-muted-foreground">
                     Đồng bộ thời gian thực trên nhiều thiết bị, hỗ trợ
-                    Import/Export dữ liệu, giao diện responsive, chế độ sáng/tối
-                    và trải nghiệm mượt mà.
+                    Import/Export dữ liệu.
                   </p>
                 </div>
                 <div className="grid size-16 shrink-0 place-items-center rounded-2xl bg-violet-500/10 text-violet-500 shadow-sm">

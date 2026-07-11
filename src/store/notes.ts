@@ -16,10 +16,15 @@ interface NotesState {
   activeTag: string | null
   /** Whether the notes pane is showing the trash instead of active notes. */
   trashView: boolean
+  /** Number of notes currently in the trash. */
+  trashCount: number
   loading: boolean
   setSearch: (search: string) => void
   setActiveTag: (tag: string | null) => void
   setTrashView: (v: boolean) => void
+  setTrashCount: (n: number) => void
+  /** Adjust the trash count by a relative delta (clamped at 0). */
+  bumpTrashCount: (delta: number) => void
   load: () => Promise<void>
   clear: () => void
   select: (id: string) => void
@@ -156,9 +161,13 @@ export const useNotes = create<NotesState>((set, get) => {
     searching: false,
     activeTag: null,
     trashView: false,
+    trashCount: 0,
     loading: false,
 
     setTrashView: (trashView) => set({ trashView }),
+    setTrashCount: (trashCount) => set({ trashCount }),
+    bumpTrashCount: (delta) =>
+      set((s) => ({ trashCount: Math.max(0, s.trashCount + delta) })),
 
     setSearch: (search) => {
       set({ search })
@@ -191,9 +200,13 @@ export const useNotes = create<NotesState>((set, get) => {
       if (!userId) return
       set({ loading: true })
       try {
-        const notes = await api.fetchNotes(userId)
+        const [notes, trashCount] = await Promise.all([
+          api.fetchNotes(userId),
+          api.countTrash(userId),
+        ])
         set((s) => ({
           notes,
+          trashCount,
           loading: false,
           currentId: notes.some((n) => n.id === s.currentId)
             ? s.currentId
@@ -218,6 +231,7 @@ export const useNotes = create<NotesState>((set, get) => {
         searching: false,
         activeTag: null,
         trashView: false,
+        trashCount: 0,
       })
     },
 
@@ -461,6 +475,8 @@ export const useNotes = create<NotesState>((set, get) => {
       if (!note || note.draft) return // never existed in the DB
       try {
         await api.deleteNote(dbId(note))
+        // Count only after the soft-delete commits (avoids racing a re-read).
+        set((s) => ({ trashCount: s.trashCount + 1 }))
       } catch {
         set({ notes: prev }) // rollback
         toast.error('Không xóa được ghi chú')

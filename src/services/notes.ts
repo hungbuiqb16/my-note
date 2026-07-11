@@ -105,6 +105,17 @@ export async function fetchNotes(userId: string): Promise<Note[]> {
   return (data as NoteRow[]).map(toNote)
 }
 
+/** Number of notes currently in the trash for this user. */
+export async function countTrash(userId: string): Promise<number> {
+  const { count, error } = await supabase
+    .from('notes')
+    .select('id', { count: 'exact', head: true })
+    .eq('user_id', userId)
+    .not('deleted_at', 'is', null)
+  if (error) throw error
+  return count ?? 0
+}
+
 /** Notes currently in the trash for this user, most-recently-deleted first. */
 export async function fetchTrash(userId: string): Promise<Note[]> {
   const { data, error } = await supabase

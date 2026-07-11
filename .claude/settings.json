@@ -50,7 +50,9 @@
       "Bash(wsl.exe -d Ubuntu-24.04 -- bash -lc 'export PATH=\"$HOME/.nvm/versions/node/v22.21.1/bin:$PATH\"; cd ~/personal/my-note && npm run build 2>&1 | grep -E \"error|Error|built\" | tail -4; echo \"---LINT---\"; npx eslint src 2>&1 | tail -8; echo done')",
       "Bash(wsl.exe -d Ubuntu-24.04 -- bash -lc 'cd ~/personal/my-note && ls dist/assets/*.css 2>/dev/null | head; grep -o \"red-500[^}]*important\" dist/assets/*.css 2>/dev/null | head; echo \"---plain red-500---\"; grep -o \"\\\\.bg-red-500[^{]*{[^}]*}\" dist/assets/*.css 2>/dev/null | head')",
       "Bash(wsl.exe -d Ubuntu-24.04 -- bash -lc 'cd ~/personal/my-note && grep -o \"\\\\-\\\\-color-red-500:[^;]*;\" dist/assets/*.css | head; echo \"---red-600---\"; grep -o \"\\\\-\\\\-color-red-600:[^;]*;\" dist/assets/*.css | head; echo \"---count red-500 usages in css---\"; grep -o \"red-500\" dist/assets/*.css | wc -l')",
-      "Bash(wsl.exe -d Ubuntu-24.04 -- bash -lc 'export PATH=\"$HOME/.nvm/versions/node/v22.21.1/bin:$PATH\"; cd ~/personal/my-note && npm run build 2>&1 | grep -E \"error|Error|built\" | tail -4; npx eslint src 2>&1 | tail -6; echo done')"
+      "Bash(wsl.exe -d Ubuntu-24.04 -- bash -lc 'export PATH=\"$HOME/.nvm/versions/node/v22.21.1/bin:$PATH\"; cd ~/personal/my-note && npm run build 2>&1 | grep -E \"error|Error|built\" | tail -4; npx eslint src 2>&1 | tail -6; echo done')",
+      "Bash(wsl.exe -d Ubuntu-24.04 -- bash -lc 'export PATH=\"$HOME/.nvm/versions/node/v22.21.1/bin:$PATH\"; cd ~/personal/my-note && npm run build 2>&1 | grep -E \"error|Error|built\" | tail -4; echo \"---LINT---\"; npx eslint src 2>&1 | tail -10; echo done')",
+      "Bash(wsl.exe -d Ubuntu-24.04 -- bash -lc 'export PATH=\"$HOME/.nvm/versions/node/v22.21.1/bin:$PATH\"; cd ~/personal/my-note && npm run build 2>&1 | grep -E \"error|Error|built\" | tail -4; echo \"---LINT---\"; npx eslint src 2>&1 | tail -12; echo done')"
     ]
   }
 }

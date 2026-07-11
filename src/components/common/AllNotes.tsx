@@ -323,6 +323,9 @@ export function AllNotes({ className, onOpen, onOpenSidebar }: AllNotesProps) {
   const activeTag = useNotes((s) => s.activeTag)
   const trashView = useNotes((s) => s.trashView)
   const setTrashView = useNotes((s) => s.setTrashView)
+  const trashCount = useNotes((s) => s.trashCount)
+  const setTrashCount = useNotes((s) => s.setTrashCount)
+  const bumpTrashCount = useNotes((s) => s.bumpTrashCount)
   const togglePin = useNotes((s) => s.togglePin)
   const remove = useNotes((s) => s.remove)
   const loadNotes = useNotes((s) => s.load)
@@ -374,6 +377,7 @@ export function AllNotes({ className, onOpen, onOpenSidebar }: AllNotesProps) {
     try {
       await restoreNote(id)
       setTrashItems((xs) => (xs ?? []).filter((n) => n.id !== id))
+      bumpTrashCount(-1)
       await loadNotes()
       toast.success('Đã khôi phục ghi chú')
     } catch {
@@ -386,6 +390,7 @@ export function AllNotes({ className, onOpen, onOpenSidebar }: AllNotesProps) {
     try {
       await purgeNote(id)
       setTrashItems((xs) => (xs ?? []).filter((n) => n.id !== id))
+      bumpTrashCount(-1)
       toast.success('Đã xóa vĩnh viễn')
     } catch {
       toast.error('Không xóa được ghi chú')
@@ -404,6 +409,7 @@ export function AllNotes({ className, onOpen, onOpenSidebar }: AllNotesProps) {
     try {
       const n = await emptyTrash(userId)
       setTrashItems([])
+      setTrashCount(0)
       toast.success(n > 0 ? `Đã xóa ${n} ghi chú` : 'Thùng rác trống')
     } catch {
       toast.error('Không dọn được thùng rác')
@@ -699,6 +705,7 @@ export function AllNotes({ className, onOpen, onOpenSidebar }: AllNotesProps) {
                     Xóa ảnh không dùng
                   </DropdownMenuItem>
                   <DropdownMenuItem
+                    disabled={trashCount === 0}
                     onClick={() => {
                       setPreviewNote(null)
                       setTrashItems(null)
@@ -707,6 +714,11 @@ export function AllNotes({ className, onOpen, onOpenSidebar }: AllNotesProps) {
                   >
                     <Trash2 />
                     Thùng rác
+                    {trashCount > 0 && (
+                      <span className="ml-auto text-xs text-muted-foreground">
+                        {trashCount}
+                      </span>
+                    )}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>

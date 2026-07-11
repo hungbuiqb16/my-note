@@ -45,6 +45,33 @@ Dashboard → **Authentication → URL Configuration**:
 Lý do: `resetPassword` dùng `redirectTo: window.location.origin`, và link xác nhận
 email đều quay về app.
 
+### 2.1 Đăng nhập OAuth (Google / GitHub) — nếu dùng
+
+Hai nút **Google** / **GitHub** ở màn hình đăng nhập gọi
+`supabase.auth.signInWithOAuth`. **Bắt buộc** phải bật provider trên Supabase,
+nếu không bấm nút sẽ báo lỗi kiểu _"provider is not enabled"_.
+
+Dashboard → **Authentication → Providers** → bật **Google** và **GitHub**, rồi
+điền **Client ID** / **Client Secret** lấy từ:
+
+- **Google** — [Google Cloud Console](https://console.cloud.google.com) → _APIs &
+  Services → Credentials → Create OAuth client ID_ (loại **Web application**).
+  - **Authorized redirect URI**:
+    `https://<PROJECT_REF>.supabase.co/auth/v1/callback`
+- **GitHub** — GitHub → _Settings → Developer settings → OAuth Apps → New OAuth
+  App_.
+  - **Authorization callback URL**:
+    `https://<PROJECT_REF>.supabase.co/auth/v1/callback`
+
+> `<PROJECT_REF>` là phần đầu của `VITE_SUPABASE_URL` (ví dụ `abcd1234` trong
+> `https://abcd1234.supabase.co`). Callback URL này trỏ về **Supabase**, không
+> phải về app.
+
+Ngoài ra, **Redirect URLs** ([mục 2](#2-cấu-hình-auth-url-trên-supabase)) phải
+chứa origin của app (`http://localhost:5174` khi dev **và** domain production) —
+flow OAuth dùng `redirectTo: window.location.origin` để quay lại app sau khi xác
+thực xong.
+
 ## 3. Build & Node version
 
 - Vercel tự nhận **Vite** → không cần chỉnh Build/Output.
@@ -105,6 +132,7 @@ Chạy trên Supabase **SQL Editor** theo thứ tự (nếu chưa chạy):
 
 - [ ] Trang tải được, hiện màn hình đăng nhập.
 - [ ] Đăng ký / đăng nhập hoạt động (không lỗi redirect).
+- [ ] Đăng nhập Google / GitHub hoạt động (nếu đã bật provider ở [mục 2.1](#21-đăng-nhập-oauth-google--github--nếu-dùng)).
 - [ ] Tạo / sửa / ghim / xóa note lưu vào Supabase.
 - [ ] Lọc theo tag hoạt động.
 - [ ] Upload avatar hiển thị được.

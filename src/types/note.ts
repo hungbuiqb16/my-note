@@ -11,6 +11,8 @@ export interface Note {
   shareId: string
   /** Whether `content` is client-side encrypted (ciphertext). */
   isEncrypted: boolean
+  /** Creation time in ms (derived from `created_at`). */
+  created: number
   /** Last-update time in ms (derived from `updated_at`). */
   updated: number
   /** Time the note was moved to trash in ms (undefined for active notes). */

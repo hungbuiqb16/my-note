@@ -7,7 +7,7 @@ built with React, TypeScript and Vite, with a Supabase backend (Postgres + Auth)
 
 - ✍️ Create, edit, pin and delete notes with **debounced autosave**
 - 🔍 Instant client-side search across titles and content
-- 🔐 Email/password authentication — each user sees only their own notes (RLS)
+- 🔐 Email/password + Google / GitHub OAuth sign-in — each user sees only their own notes (RLS)
 - 👤 Profile & account management (display name, avatar, email, password)
 - 🌗 Light / dark theme with system detection, persisted to `localStorage`
 - ⌨️ Keyboard shortcuts: `Ctrl/⌘+N` new note, `Ctrl/⌘+K` focus search
@@ -81,6 +81,11 @@ user can only access their own rows.
 Email/password sign-up is used. For local testing you can disable
 **Confirm email** under **Authentication → Providers → Email** so new accounts can
 sign in immediately; otherwise users must confirm via the emailed link first.
+
+Optional **Google / GitHub OAuth** is also wired up. Enable the providers under
+**Authentication → Providers** and set the callback / redirect URLs — see
+[DEPLOY.md § 2.1](DEPLOY.md#21-đăng-nhập-oauth-google--github--nếu-dùng) for the
+exact steps. Without enabling them, the OAuth buttons will error.
 
 ## Available Scripts
 

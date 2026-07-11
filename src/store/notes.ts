@@ -371,6 +371,7 @@ export const useNotes = create<NotesState>((set, get) => {
         isPublic: false,
         shareId: '',
         isEncrypted: false,
+        created: Date.now(),
         updated: Date.now(),
         draft: true,
       }
@@ -507,8 +508,23 @@ export const useNotes = create<NotesState>((set, get) => {
   }
 })
 
+export type SortBy = 'updated' | 'created' | 'title'
+
+export interface VisibleOptions {
+  sortBy: SortBy
+  pinnedOnly: boolean
+  encryptedOnly: boolean
+}
+
+const DEFAULT_OPTIONS: VisibleOptions = {
+  sortBy: 'updated',
+  pinnedOnly: false,
+  encryptedOnly: false,
+}
+
 /**
- * Filter a note list by `activeTag` and sort pinned-first then by recency.
+ * Filter a note list by `activeTag` + the given filters, then sort pinned-first
+ * and by the chosen field (dates newest-first, title A→Z).
  * Text search is done server-side (see `searchNotes`); pass the appropriate
  * base list (all notes, or the search results).
  * Pure helper — call it inside a `useMemo`, never as a Zustand selector
@@ -517,12 +533,19 @@ export const useNotes = create<NotesState>((set, get) => {
 export function selectVisibleNotes(
   notes: Note[],
   activeTag: string | null,
+  opts: VisibleOptions = DEFAULT_OPTIONS,
 ): Note[] {
+  const bySort = (a: Note, b: Note) => {
+    if (opts.sortBy === 'title')
+      return a.title.localeCompare(b.title, 'vi', { sensitivity: 'base' })
+    if (opts.sortBy === 'created') return b.created - a.created
+    return b.updated - a.updated
+  }
   return notes
     .filter((n) => !activeTag || n.tags.includes(activeTag))
-    .sort(
-      (a, b) => Number(b.pinned) - Number(a.pinned) || b.updated - a.updated,
-    )
+    .filter((n) => !opts.pinnedOnly || n.pinned)
+    .filter((n) => !opts.encryptedOnly || n.isEncrypted)
+    .sort((a, b) => Number(b.pinned) - Number(a.pinned) || bySort(a, b))
 }
 
 /** Unique tags across all notes, alphabetically sorted. */

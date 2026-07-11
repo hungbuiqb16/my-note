@@ -11,6 +11,7 @@ function toNote(row: NoteRow): Note {
     isPublic: row.is_public,
     shareId: row.share_id,
     isEncrypted: row.is_encrypted,
+    created: Date.parse(row.created_at),
     updated: Date.parse(row.updated_at),
     deletedAt: row.deleted_at ? Date.parse(row.deleted_at) : undefined,
   }

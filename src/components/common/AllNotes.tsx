@@ -13,12 +13,13 @@ import {
   Search,
   Settings,
   Share2,
+  SlidersHorizontal,
   Trash2,
   Upload,
   X,
 } from 'lucide-react'
 import { toast } from 'sonner'
-import { selectVisibleNotes, useNotes } from '@/store/notes'
+import { selectVisibleNotes, useNotes, type SortBy } from '@/store/notes'
 import { useAuth } from '@/store/auth'
 import {
   emptyTrash,
@@ -33,8 +34,12 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
   DropdownMenu,
+  DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
@@ -332,12 +337,31 @@ export function AllNotes({ className, onOpen, onOpenSidebar }: AllNotesProps) {
   const userId = useAuth((s) => s.user?.id)
   const email = useAuth((s) => s.user?.email)
 
+  // Sort & filter options for the active notes list.
+  const [sortBy, setSortBy] = useState<SortBy>('updated')
+  const [pinnedOnly, setPinnedOnly] = useState(false)
+  const [encryptedOnly, setEncryptedOnly] = useState(false)
+  const filtersActive =
+    sortBy !== 'updated' || pinnedOnly || encryptedOnly
+
   const isSearching = search.trim().length > 0
   const visible = useMemo(() => {
     // Base list: server search results when searching, else all notes.
     const list = isSearching ? (searchResults ?? []) : notes
-    return selectVisibleNotes(list, activeTag)
-  }, [isSearching, searchResults, notes, activeTag])
+    return selectVisibleNotes(list, activeTag, {
+      sortBy,
+      pinnedOnly,
+      encryptedOnly,
+    })
+  }, [
+    isSearching,
+    searchResults,
+    notes,
+    activeTag,
+    sortBy,
+    pinnedOnly,
+    encryptedOnly,
+  ])
 
   const importRef = useRef<HTMLInputElement>(null)
   const [dataBusy, setDataBusy] = useState(false)
@@ -549,7 +573,7 @@ export function AllNotes({ className, onOpen, onOpenSidebar }: AllNotesProps) {
   const [page, setPage] = useState(1)
   // Reset to page 1 when the filter (or view) changes (React's
   // adjust-state-on-change pattern using state, not a ref).
-  const filterKey = `${trashView ? 'trash' : 'notes'}::${search}::${activeTag ?? ''}`
+  const filterKey = `${trashView ? 'trash' : 'notes'}::${search}::${activeTag ?? ''}::${pinnedOnly}::${encryptedOnly}`
   const [prevFilter, setPrevFilter] = useState(filterKey)
   if (prevFilter !== filterKey) {
     setPrevFilter(filterKey)
@@ -681,6 +705,56 @@ export function AllNotes({ className, onOpen, onOpenSidebar }: AllNotesProps) {
                   <Button
                     variant="ghost"
                     size="icon"
+                    aria-label="Sắp xếp & lọc"
+                    className={cn(
+                      'rounded-xl text-muted-foreground',
+                      filtersActive && 'text-primary',
+                    )}
+                  >
+                    <SlidersHorizontal className="size-[18px]" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent
+                  align="end"
+                  className="min-w-44 [&_[role=menuitemcheckbox]]:whitespace-nowrap [&_[role=menuitemradio]]:whitespace-nowrap"
+                >
+                  <DropdownMenuLabel>Sắp xếp theo</DropdownMenuLabel>
+                  <DropdownMenuRadioGroup
+                    value={sortBy}
+                    onValueChange={(v) => setSortBy(v as SortBy)}
+                  >
+                    <DropdownMenuRadioItem value="updated">
+                      Ngày sửa
+                    </DropdownMenuRadioItem>
+                    <DropdownMenuRadioItem value="created">
+                      Ngày tạo
+                    </DropdownMenuRadioItem>
+                    <DropdownMenuRadioItem value="title">
+                      Tên
+                    </DropdownMenuRadioItem>
+                  </DropdownMenuRadioGroup>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuLabel>Lọc</DropdownMenuLabel>
+                  <DropdownMenuCheckboxItem
+                    checked={pinnedOnly}
+                    onCheckedChange={(c) => setPinnedOnly(c === true)}
+                  >
+                    Chỉ ghi chú ghim
+                  </DropdownMenuCheckboxItem>
+                  <DropdownMenuCheckboxItem
+                    checked={encryptedOnly}
+                    onCheckedChange={(c) => setEncryptedOnly(c === true)}
+                  >
+                    Chỉ đã mã hóa
+                  </DropdownMenuCheckboxItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
                     disabled={dataBusy}
                     aria-label="Dữ liệu & cài đặt"
                     className="rounded-xl text-muted-foreground"
@@ -688,7 +762,10 @@ export function AllNotes({ className, onOpen, onOpenSidebar }: AllNotesProps) {
                     <Settings className="size-4" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
+                <DropdownMenuContent
+                  align="end"
+                  className="min-w-44 [&_[role=menuitem]]:whitespace-nowrap"
+                >
                   <DropdownMenuItem
                     disabled={notes.length === 0}
                     onClick={handleExport}

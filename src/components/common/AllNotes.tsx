@@ -64,6 +64,8 @@ interface NoteCardProps {
   onTogglePin: (id: string) => void
   onShare: (id: string) => void
   onRequestDelete: (note: Note) => void
+  /** Immediate delete (no confirm) — used by swipe-to-delete. */
+  onDelete: (note: Note) => void
 }
 
 function NoteCard({
@@ -73,6 +75,7 @@ function NoteCard({
   onTogglePin,
   onShare,
   onRequestDelete,
+  onDelete,
 }: NoteCardProps) {
   const [dx, setDx] = useState(0)
   const [dragging, setDragging] = useState(false)
@@ -102,7 +105,7 @@ function NoteCard({
     setDragging(false)
     const past = dx > width.current * SWIPE_DELETE_THRESHOLD
     setDx(0)
-    if (past) onRequestDelete(note)
+    if (past) onDelete(note)
   }
 
   const handleClick = () => {
@@ -363,6 +366,12 @@ export function AllNotes({ className, onOpen, onOpenSidebar }: AllNotesProps) {
     setDeleteTarget(null)
   }
 
+  // Swipe-to-delete deletes immediately, without the confirm dialog.
+  const handleSwipeDelete = (note: Note) => {
+    void remove(note.id)
+    toast.success('Đã xóa ghi chú')
+  }
+
   const [page, setPage] = useState(1)
   // Reset to page 1 when the filter changes (React's adjust-state-on-change
   // pattern using state, not a ref).
@@ -500,6 +509,7 @@ export function AllNotes({ className, onOpen, onOpenSidebar }: AllNotesProps) {
                 onTogglePin={togglePin}
                 onShare={setShareId}
                 onRequestDelete={setDeleteTarget}
+                onDelete={handleSwipeDelete}
               />
             ))}
           </div>

@@ -125,6 +125,8 @@ export function Editor({ note, className, onBack }: EditorProps) {
   const decrypting = encrypted && !locked && plain === null
   // The plaintext the editor works on (decrypted for secure notes).
   const content = encrypted ? (plain ?? '') : note.content
+  // A brand-new note with nothing typed yet isn't persisted — disable actions.
+  const isEmpty = !note.title.trim() && !content.trim()
 
   // Decrypt a secure note once the vault is unlocked.
   useEffect(() => {
@@ -282,6 +284,7 @@ export function Editor({ note, className, onBack }: EditorProps) {
               <Button
                 variant="ghost"
                 size="icon"
+                disabled={isEmpty}
                 onClick={() => setSecureOpen(true)}
                 className={cn(
                   'rounded-xl text-muted-foreground',
@@ -305,6 +308,7 @@ export function Editor({ note, className, onBack }: EditorProps) {
               <Button
                 variant="ghost"
                 size="icon"
+                disabled={isEmpty}
                 onClick={() => {
                   if (encrypted) {
                     toast.error('Không thể chia sẻ ghi chú đã mã hóa')
@@ -335,6 +339,7 @@ export function Editor({ note, className, onBack }: EditorProps) {
               <Button
                 variant="ghost"
                 size="icon"
+                disabled={isEmpty}
                 onClick={() => togglePin(note.id)}
                 className={cn(
                   'rounded-xl text-muted-foreground',
@@ -356,6 +361,7 @@ export function Editor({ note, className, onBack }: EditorProps) {
                   <Button
                     variant="ghost"
                     size="icon"
+                    disabled={isEmpty}
                     className="rounded-xl text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
                   >
                     <Trash2 className="size-4" />

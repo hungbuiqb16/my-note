@@ -8,8 +8,6 @@ import {
   Search,
   Sparkles,
   Sun,
-  Trash2,
-  UserRound,
 } from 'lucide-react'
 import { useTheme } from '@/hooks/useTheme'
 import { Button } from '@/components/ui/button'
@@ -17,83 +15,29 @@ import { Button } from '@/components/ui/button'
 interface FeatureGroup {
   icon: typeof NotebookPen
   title: string
-  items: string[]
+  desc: string
 }
 
 const GROUPS: FeatureGroup[] = [
   {
-    icon: UserRound,
-    title: 'Xác thực & Tài khoản',
-    items: [
-      'Đăng nhập bằng email + mật khẩu',
-      'Đăng nhập OAuth Google / GitHub',
-      'Quên mật khẩu qua email',
-      'Đăng xuất mọi thiết bị',
-      'Hồ sơ: tên hiển thị, ảnh đại diện, đổi email / mật khẩu',
-      'Xóa tài khoản vĩnh viễn',
-    ],
-  },
-  {
     icon: NotebookPen,
-    title: 'Ghi chú & Soạn thảo',
-    items: [
-      'Tự động lưu, không lưu bản nháp trống',
-      'Markdown + xem trước, thanh công cụ đầy đủ',
-      'Syntax highlight cho khối code',
-      'Đếm từ / ký tự / thời gian đọc',
-      'Chèn ảnh (nút / dán / kéo-thả)',
-      'Ghim ghi chú quan trọng',
-    ],
+    title: 'Soạn thảo mạnh mẽ',
+    desc: 'Tạo và chỉnh sửa ghi chú với Markdown, xem trước trực tiếp, tự động lưu, chèn ảnh, tô sáng cú pháp code, đếm từ và nhiều công cụ hỗ trợ viết.',
   },
   {
     icon: Search,
-    title: 'Tổ chức & Tìm kiếm',
-    items: [
-      'Tags + lọc theo tag, gợi ý tag đã có',
-      'Tìm kiếm toàn văn + tô đậm từ khớp',
-      'Sắp xếp: ngày sửa / ngày tạo / tên',
-      'Lọc: chỉ ghi chú ghim / đã mã hóa',
-      'Phân trang gọn gàng',
-    ],
+    title: 'Quản lý thông minh',
+    desc: 'Sắp xếp ghi chú bằng thẻ (Tags), tìm kiếm toàn văn, bộ lọc nâng cao, ghim ghi chú, phân trang và thùng rác khôi phục trong 30 ngày.',
   },
   {
     icon: Lock,
-    title: 'Bảo mật & Chia sẻ',
-    items: [
-      'Ghi chú bảo mật — mã hóa đầu-cuối (E2E)',
-      'Khóa vault chỉ tồn tại trên thiết bị',
-      'Chia sẻ link công khai (read-only)',
-      'RLS — chỉ bạn thấy ghi chú của mình',
-    ],
-  },
-  {
-    icon: Trash2,
-    title: 'Thùng rác',
-    items: [
-      'Xóa mềm, giữ 30 ngày rồi tự dọn',
-      'Khôi phục hoặc xóa vĩnh viễn',
-      'Xem lại ghi chú đã xóa (read-only)',
-      'Dọn sạch thùng rác một chạm',
-    ],
+    title: 'Bảo mật & Riêng tư',
+    desc: 'Mã hóa đầu cuối (End-to-End Encryption) cho ghi chú quan trọng, chia sẻ an toàn, mỗi người dùng chỉ truy cập được dữ liệu của chính mình.',
   },
   {
     icon: Cloud,
-    title: 'Đồng bộ & Dữ liệu',
-    items: [
-      'Đồng bộ thời gian thực đa thiết bị',
-      'Xuất / nhập dữ liệu JSON',
-      'Dọn ảnh không dùng',
-    ],
-  },
-  {
-    icon: Sparkles,
-    title: 'Giao diện & Trải nghiệm',
-    items: [
-      'Giao diện sáng / tối, nhớ lựa chọn',
-      'Thiết kế glassmorphism, hiệu ứng mượt',
-      'Responsive — dùng tốt trên điện thoại',
-      'Trượt để xóa, phím tắt, FAB tạo nhanh',
-    ],
+    title: 'Đồng bộ mọi nơi',
+    desc: 'Đồng bộ thời gian thực trên nhiều thiết bị, hỗ trợ Import/Export dữ liệu, giao diện responsive, chế độ sáng/tối và trải nghiệm mượt mà.',
   },
 ]
 
@@ -102,7 +46,7 @@ export function Features() {
 
   return (
     <div className="min-h-screen">
-      <div className="mx-auto max-w-5xl px-5 py-8 md:py-14">
+      <div className="mx-auto max-w-5xl px-5 pt-4 pb-10 md:pt-5 md:pb-16">
         {/* Top bar */}
         <div className="flex items-center justify-between">
           <Link
@@ -159,34 +103,23 @@ export function Features() {
         </header>
 
         {/* Feature grid */}
-        <div className="mt-16 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {GROUPS.map(({ icon: Icon, title, items }, i) => (
+        <div className="mt-16 grid grid-cols-1 gap-4 sm:grid-cols-2">
+          {GROUPS.map(({ icon: Icon, title, desc }) => (
             <section
               key={title}
-              className={`rounded-2xl border border-black/5 bg-card p-5 shadow-soft transition-all hover:-translate-y-[3px] hover:border-brand-2/60 hover:shadow-lift dark:border-white/10 dark:bg-white/[.03] dark:hover:border-brand-2/60 ${
-                // Center the lone last card in the 3-column desktop layout.
-                i === GROUPS.length - 1 ? 'lg:col-start-2' : ''
-              }`}
+              className="rounded-2xl border border-black/5 bg-card p-6 shadow-soft transition-all hover:-translate-y-[3px] hover:border-brand-2/60 hover:shadow-lift dark:border-white/10 dark:bg-white/[.03] dark:hover:border-brand-2/60"
             >
               <div className="flex items-center gap-3">
-                <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary">
+                <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary">
                   <Icon className="size-5" />
                 </span>
-                <h2 className="font-display text-base font-bold tracking-tight">
+                <h2 className="font-display text-lg font-bold tracking-tight">
                   {title}
                 </h2>
               </div>
-              <ul className="mt-4 space-y-2">
-                {items.map((item) => (
-                  <li
-                    key={item}
-                    className="flex gap-2 text-sm text-muted-foreground"
-                  >
-                    <span className="mt-2 size-1.5 shrink-0 rounded-full bg-primary/60" />
-                    {item}
-                  </li>
-                ))}
-              </ul>
+              <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
+                {desc}
+              </p>
             </section>
           ))}
         </div>

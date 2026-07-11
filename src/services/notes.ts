@@ -71,10 +71,14 @@ export async function fetchPublicNote(
 export { toNote as rowToNote }
 
 /** Server-side full-text search (title + content) for the current user. */
-export async function searchNotes(query: string): Promise<Note[]> {
+export async function searchNotes(
+  userId: string,
+  query: string,
+): Promise<Note[]> {
   const { data, error } = await supabase
     .from('notes')
     .select('*')
+    .eq('user_id', userId)
     .textSearch('fts', query, { type: 'websearch', config: 'simple' })
     .order('pinned', { ascending: false })
     .order('updated_at', { ascending: false })
@@ -82,11 +86,16 @@ export async function searchNotes(query: string): Promise<Note[]> {
   return (data as NoteRow[]).map(toNote)
 }
 
-/** All notes for the current user, pinned first then most-recent. */
-export async function fetchNotes(): Promise<Note[]> {
+/**
+ * All notes for the current user, pinned first then most-recent.
+ * Must filter by user_id: the public-share RLS policy would otherwise let
+ * this read other users' public notes too.
+ */
+export async function fetchNotes(userId: string): Promise<Note[]> {
   const { data, error } = await supabase
     .from('notes')
     .select('*')
+    .eq('user_id', userId)
     .order('pinned', { ascending: false })
     .order('updated_at', { ascending: false })
   if (error) throw error
@@ -168,10 +177,11 @@ export async function importNotes(
 }
 
 /** All raw note rows for the current user, for data export. */
-export async function exportNotes(): Promise<NoteRow[]> {
+export async function exportNotes(userId: string): Promise<NoteRow[]> {
   const { data, error } = await supabase
     .from('notes')
     .select('*')
+    .eq('user_id', userId)
     .order('created_at', { ascending: true })
   if (error) throw error
   return data as NoteRow[]

@@ -54,6 +54,179 @@ interface AllNotesProps {
   onOpenSidebar: () => void
 }
 
+// Fraction of the card width to swipe (right) before it triggers delete.
+const SWIPE_DELETE_THRESHOLD = 0.4
+
+interface NoteCardProps {
+  note: Note
+  query: string
+  onOpen: (id: string) => void
+  onTogglePin: (id: string) => void
+  onShare: (id: string) => void
+  onRequestDelete: (note: Note) => void
+}
+
+function NoteCard({
+  note,
+  query,
+  onOpen,
+  onTogglePin,
+  onShare,
+  onRequestDelete,
+}: NoteCardProps) {
+  const [dx, setDx] = useState(0)
+  const [dragging, setDragging] = useState(false)
+  const startX = useRef(0)
+  const width = useRef(0)
+  const moved = useRef(false)
+
+  // Swipe-to-delete is touch-only (mobile).
+  const onPointerDown = (e: React.PointerEvent<HTMLButtonElement>) => {
+    if (e.pointerType !== 'touch') return
+    startX.current = e.clientX
+    width.current = e.currentTarget.offsetWidth
+    moved.current = false
+    setDragging(true)
+    e.currentTarget.setPointerCapture(e.pointerId)
+  }
+
+  const onPointerMove = (e: React.PointerEvent<HTMLButtonElement>) => {
+    if (!dragging) return
+    const delta = e.clientX - startX.current
+    if (Math.abs(delta) > 6) moved.current = true
+    setDx(Math.max(0, Math.min(delta, width.current)))
+  }
+
+  const endDrag = () => {
+    if (!dragging) return
+    setDragging(false)
+    const past = dx > width.current * SWIPE_DELETE_THRESHOLD
+    setDx(0)
+    if (past) onRequestDelete(note)
+  }
+
+  const handleClick = () => {
+    if (moved.current) return // was a swipe, not a tap
+    onOpen(note.id)
+  }
+
+  return (
+    <div className="group relative">
+      {dx > 0 && (
+        <div className="pointer-events-none absolute inset-0 flex items-center gap-2 rounded-xl bg-red-500 px-4 text-sm font-medium text-white">
+          <Trash2 className="size-4" />
+          Xóa
+        </div>
+      )}
+      <button
+        type="button"
+        onClick={handleClick}
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={endDrag}
+        onPointerCancel={endDrag}
+        style={{
+          transform: dx > 0 ? `translateX(${dx}px)` : undefined,
+          transition: dragging ? 'none' : undefined,
+          touchAction: 'pan-y',
+          background: dx > 0 ? 'var(--card)' : undefined,
+        }}
+        className="relative flex h-44 w-full flex-col rounded-xl border border-black/5 bg-card p-4 text-left transition-all select-none hover:-translate-y-0.5 hover:shadow-lift focus-visible:ring-2 focus-visible:ring-primary dark:border-white/10 dark:bg-white/[.03]"
+      >
+        <div className="flex items-start justify-between gap-2">
+          <h3
+            className={cn(
+              'min-w-0 truncate font-semibold',
+              !note.title && 'font-normal text-muted-foreground italic',
+            )}
+          >
+            {note.title ? (
+              <Highlight text={note.title} query={query} />
+            ) : (
+              'Chưa có tiêu đề'
+            )}
+          </h3>
+          <div className="mt-0.5 flex shrink-0 items-center gap-1">
+            {note.isEncrypted && <Lock className="size-3.5 text-primary" />}
+            {note.pinned && (
+              <Pin className="size-3.5 fill-primary text-primary" />
+            )}
+          </div>
+        </div>
+        {note.isEncrypted ? (
+          <p className="mt-1 flex flex-1 items-center gap-1.5 text-[13px] text-muted-foreground italic">
+            <Lock className="size-3.5" /> Nội dung được mã hóa
+          </p>
+        ) : (
+          <p className="mt-1 line-clamp-3 flex-1 text-[13px] whitespace-pre-wrap text-muted-foreground">
+            {note.content ? (
+              <Highlight text={note.content} query={query} />
+            ) : (
+              'Trống'
+            )}
+          </p>
+        )}
+        {note.tags.length > 0 && (
+          <div className="mt-2 flex flex-wrap gap-1">
+            {note.tags.slice(0, 3).map((tag) => (
+              <span
+                key={tag}
+                className="rounded-full bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary"
+              >
+                {tag}
+              </span>
+            ))}
+            {note.tags.length > 3 && (
+              <span className="text-[10px] text-muted-foreground/70">
+                +{note.tags.length - 3}
+              </span>
+            )}
+          </div>
+        )}
+        <p className="mt-2 text-[11px] text-muted-foreground/70">
+          {timeAgo(note.updated)}
+        </p>
+      </button>
+
+      <div className="absolute right-2 bottom-2">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              className="rounded-lg text-muted-foreground shadow-none focus-visible:border-transparent focus-visible:ring-0"
+              aria-label="Tùy chọn"
+            >
+              <EllipsisVertical />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" side="top">
+            <DropdownMenuItem onClick={() => onTogglePin(note.id)}>
+              {note.pinned ? <PinOff /> : <Pin />}
+              {note.pinned ? 'Bỏ ghim' : 'Ghim'}
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              disabled={note.isEncrypted}
+              onClick={() => onShare(note.id)}
+            >
+              <Share2 />
+              Chia sẻ
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              variant="destructive"
+              onClick={() => onRequestDelete(note)}
+            >
+              <Trash2 />
+              Xóa
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+    </div>
+  )
+}
+
 export function AllNotes({ className, onOpen, onOpenSidebar }: AllNotesProps) {
   const notes = useNotes((s) => s.notes)
   const search = useNotes((s) => s.search)
@@ -78,9 +251,10 @@ export function AllNotes({ className, onOpen, onOpenSidebar }: AllNotesProps) {
   const [searchOpen, setSearchOpen] = useState(false)
 
   const handleExport = async () => {
+    if (!userId) return
     setDataBusy(true)
     try {
-      const rows = await exportNotes()
+      const rows = await exportNotes(userId)
       const json = JSON.stringify(rows, null, 2)
       const filename = `hnote-export-${new Date().toISOString().slice(0, 10)}.json`
 
@@ -315,136 +489,45 @@ export function AllNotes({ className, onOpen, onOpenSidebar }: AllNotesProps) {
         ) : (
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {pageItems.map((note) => (
-              <div key={note.id} className="group relative">
-                <button
-                  type="button"
-                  onClick={() => onOpen(note.id)}
-                  className="flex h-44 w-full flex-col rounded-xl border border-black/5 bg-card p-4 text-left transition-all hover:-translate-y-0.5 hover:shadow-lift focus-visible:ring-2 focus-visible:ring-primary dark:border-white/10 dark:bg-white/[.03]"
-                >
-                  <div className="flex items-start justify-between gap-2">
-                    <h3
-                      className={cn(
-                        'min-w-0 truncate font-semibold',
-                        !note.title &&
-                          'font-normal text-muted-foreground italic',
-                      )}
-                    >
-                      {note.title ? (
-                        <Highlight text={note.title} query={search} />
-                      ) : (
-                        'Chưa có tiêu đề'
-                      )}
-                    </h3>
-                    <div className="mt-0.5 flex shrink-0 items-center gap-1">
-                      {note.isEncrypted && (
-                        <Lock className="size-3.5 text-primary" />
-                      )}
-                      {note.pinned && (
-                        <Pin className="size-3.5 fill-primary text-primary" />
-                      )}
-                    </div>
-                  </div>
-                  {note.isEncrypted ? (
-                    <p className="mt-1 flex flex-1 items-center gap-1.5 text-[13px] text-muted-foreground italic">
-                      <Lock className="size-3.5" /> Nội dung được mã hóa
-                    </p>
-                  ) : (
-                    <p className="mt-1 line-clamp-3 flex-1 text-[13px] whitespace-pre-wrap text-muted-foreground">
-                      {note.content ? (
-                        <Highlight text={note.content} query={search} />
-                      ) : (
-                        'Trống'
-                      )}
-                    </p>
-                  )}
-                  {note.tags.length > 0 && (
-                    <div className="mt-2 flex flex-wrap gap-1">
-                      {note.tags.slice(0, 3).map((tag) => (
-                        <span
-                          key={tag}
-                          className="rounded-full bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary"
-                        >
-                          {tag}
-                        </span>
-                      ))}
-                      {note.tags.length > 3 && (
-                        <span className="text-[10px] text-muted-foreground/70">
-                          +{note.tags.length - 3}
-                        </span>
-                      )}
-                    </div>
-                  )}
-                  <p className="mt-2 text-[11px] text-muted-foreground/70">
-                    {timeAgo(note.updated)}
-                  </p>
-                </button>
-
-                <div className="absolute right-2 bottom-2">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="icon-sm"
-                        className="rounded-lg text-muted-foreground shadow-none focus-visible:border-transparent focus-visible:ring-0"
-                        aria-label="Tùy chọn"
-                      >
-                        <EllipsisVertical />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" side="top">
-                      <DropdownMenuItem onClick={() => togglePin(note.id)}>
-                        {note.pinned ? <PinOff /> : <Pin />}
-                        {note.pinned ? 'Bỏ ghim' : 'Ghim'}
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        disabled={note.isEncrypted}
-                        onClick={() => setShareId(note.id)}
-                      >
-                        <Share2 />
-                        Chia sẻ
-                      </DropdownMenuItem>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem
-                        variant="destructive"
-                        onClick={() => setDeleteTarget(note)}
-                      >
-                        <Trash2 />
-                        Xóa
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
-              </div>
+              <NoteCard
+                key={note.id}
+                note={note}
+                query={search}
+                onOpen={onOpen}
+                onTogglePin={togglePin}
+                onShare={setShareId}
+                onRequestDelete={setDeleteTarget}
+              />
             ))}
           </div>
         )}
-
-        {totalPages > 1 && (
-          <div className="mt-6 flex items-center justify-center gap-3">
-            <Button
-              variant="secondary"
-              size="icon"
-              disabled={currentPage === 1}
-              onClick={() => setPage(currentPage - 1)}
-              aria-label="Trang trước"
-            >
-              <ChevronLeft />
-            </Button>
-            <span className="text-sm text-muted-foreground">
-              Trang {currentPage} / {totalPages}
-            </span>
-            <Button
-              variant="secondary"
-              size="icon"
-              disabled={currentPage === totalPages}
-              onClick={() => setPage(currentPage + 1)}
-              aria-label="Trang sau"
-            >
-              <ChevronRight />
-            </Button>
-          </div>
-        )}
       </div>
+
+      {totalPages > 1 && (
+        <div className="flex shrink-0 items-center justify-center gap-3 border-t border-black/5 px-4 py-3 dark:border-white/5">
+          <Button
+            variant="secondary"
+            size="icon"
+            disabled={currentPage === 1}
+            onClick={() => setPage(currentPage - 1)}
+            aria-label="Trang trước"
+          >
+            <ChevronLeft />
+          </Button>
+          <span className="text-sm text-muted-foreground">
+            Trang {currentPage} / {totalPages}
+          </span>
+          <Button
+            variant="secondary"
+            size="icon"
+            disabled={currentPage === totalPages}
+            onClick={() => setPage(currentPage + 1)}
+            aria-label="Trang sau"
+          >
+            <ChevronRight />
+          </Button>
+        </div>
+      )}
 
       {shareNote && (
         <ShareDialog

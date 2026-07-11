@@ -52,7 +52,10 @@ export async function uploadNoteImage(
  */
 export async function cleanupOrphanImages(userId: string): Promise<number> {
   // 1. Collect referenced object paths from every note's content.
-  const { data: notes, error } = await supabase.from('notes').select('content')
+  const { data: notes, error } = await supabase
+    .from('notes')
+    .select('content')
+    .eq('user_id', userId)
   if (error) throw error
 
   const referenced = new Set<string>()

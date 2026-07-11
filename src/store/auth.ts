@@ -59,7 +59,13 @@ export const useAuth = create<AuthState>((set) => ({
   },
 
   signUp: async (email, password) => {
-    const { error } = await supabase.auth.signUp({ email, password })
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      // Confirmation link returns to the current app origin (must be allowed
+      // in Supabase → Auth → URL Configuration → Redirect URLs).
+      options: { emailRedirectTo: window.location.origin },
+    })
     if (error) throw error
   },
 

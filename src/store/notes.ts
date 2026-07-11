@@ -161,10 +161,12 @@ export const useNotes = create<NotesState>((set, get) => {
         set({ searchResults: null, searching: false })
         return
       }
+      const userId = useAuth.getState().user?.id
+      if (!userId) return
       set({ searching: true })
       searchTimer = setTimeout(() => {
         void api
-          .searchNotes(q)
+          .searchNotes(userId, q)
           .then((rows) => {
             // Ignore stale responses if the query changed meanwhile.
             if (get().search.trim() === q) {
@@ -178,9 +180,11 @@ export const useNotes = create<NotesState>((set, get) => {
     setActiveTag: (activeTag) => set({ activeTag }),
 
     load: async () => {
+      const userId = useAuth.getState().user?.id
+      if (!userId) return
       set({ loading: true })
       try {
-        const notes = await api.fetchNotes()
+        const notes = await api.fetchNotes(userId)
         set((s) => ({
           notes,
           loading: false,

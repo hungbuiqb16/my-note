@@ -383,7 +383,7 @@ export function AboutDialog({ open, onOpenChange }: DialogProps) {
             />
             <div>
               <DialogTitle>hnote</DialogTitle>
-              <DialogDescription>Ghi chú nhanh, gọn, riêng tư.</DialogDescription>
+              <DialogDescription>Ghi chú nhanh, gọn, riêng tư ⭐</DialogDescription>
             </div>
           </div>
         </DialogHeader>

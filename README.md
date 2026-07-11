@@ -1,4 +1,4 @@
-# hnote - Ghi chú nhanh
+# hnote - Quick, Simple, Private. ⭐
 
 A modern note-taking app — glassmorphism UI, gradient accents, and dark mode —
 built with React, TypeScript and Vite, with a Supabase backend (Postgres + Auth).

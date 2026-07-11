@@ -83,7 +83,7 @@ export function UserMenu() {
           align="start"
           side="top"
           sideOffset={8}
-          className="w-56"
+          className="w-48"
         >
           <DropdownMenuLabel className="flex flex-col gap-0.5">
             <span className="truncate text-sm font-semibold">{name}</span>

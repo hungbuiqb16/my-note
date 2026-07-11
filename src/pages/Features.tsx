@@ -183,8 +183,9 @@ export function Features() {
         {/* Features — bento grid */}
         <section id="tinh-nang" className="mt-24 scroll-mt-8">
           <div className="text-center">
-            <h2 className="font-display text-3xl font-bold tracking-tight md:text-4xl">
-              Tất cả tính năng <span className="grad-text">trong một nơi</span>
+            <h2 className="font-display text-3xl font-bold tracking-tight text-balance md:text-4xl">
+              Tất cả tính năng{' '}
+              <span className="grad-text whitespace-nowrap">trong một nơi</span>
             </h2>
           </div>
 

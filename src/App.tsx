@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect } from 'react'
+import { lazy, Suspense, useEffect, useState } from 'react'
 import { Navigate, Route, Routes } from 'react-router-dom'
 import { Loader2 } from 'lucide-react'
 import { AppLayout } from '@/layouts/AppLayout'
@@ -42,13 +42,18 @@ function AppRoute() {
   return session ? <AppLayout /> : <Navigate to={ROUTES.login} replace />
 }
 
-// Reset-password screen: only reachable with a session (the recovery link
-// establishes one). Typing the URL while signed out bounces to login.
+// Reset-password screen: only reachable via a recovery email link (its URL
+// carries a token). Captured once on mount so the form survives Supabase
+// stripping the token from the URL. Typing the path directly → bounce away.
 function ResetRoute() {
   const ready = useAuth((s) => s.ready)
-  const session = useAuth((s) => s.session)
+  const [fromLink] = useState(() => {
+    const q = new URLSearchParams(window.location.search)
+    return q.has('code') || /type=recovery|access_token/.test(location.hash)
+  })
+  if (fromLink) return <ResetPassword />
   if (!ready) return <Splash />
-  return session ? <ResetPassword /> : <Navigate to={ROUTES.login} replace />
+  return <Navigate to={ROUTES.login} replace />
 }
 
 function App() {

@@ -125,9 +125,9 @@ export function AppLayout() {
           type="button"
           onClick={handleCreate}
           aria-label="Ghi chú mới"
-          className="grad-btn fixed right-6 bottom-6 z-20 grid size-14 place-items-center rounded-full text-white shadow-lift transition-transform active:scale-95"
+          className="grad-btn fab fixed right-6 bottom-6 z-20 grid size-14 place-items-center rounded-full text-white"
         >
-          <Plus className="size-6" strokeWidth={2.5} />
+          <Plus className="fab-icon size-6" strokeWidth={2.5} />
         </button>
       )}
     </TooltipProvider>

@@ -1,4 +1,4 @@
-# Noteflow
+# hnote - Ghi chú nhanh
 
 A modern note-taking app — glassmorphism UI, gradient accents, and dark mode —
 built with React, TypeScript and Vite, with a Supabase backend (Postgres + Auth).

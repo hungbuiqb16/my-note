@@ -410,6 +410,10 @@ export function AboutDialog({ open, onOpenChange }: DialogProps) {
               <span className="text-primary">•</span>
               Đồng bộ thời gian thực trên nhiều thiết bị
             </li>
+            <li className="flex gap-2">
+              <span className="text-primary">•</span>
+              Và 7749 tính năng khác đang chờ bạn khám phá! 😉
+            </li>
           </ul>
           <p className="text-xs text-muted-foreground">Phiên bản 1.0.0 by Hùng Bùi</p>
         </div>

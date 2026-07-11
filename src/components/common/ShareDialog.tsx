@@ -12,6 +12,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import type { Note } from '@/types/note'
+import { sharePath } from '@/constants/routes'
 
 interface ShareDialogProps {
   note: Note
@@ -25,7 +26,7 @@ export function ShareDialog({ note, open, onOpenChange }: ShareDialogProps) {
   const [copied, setCopied] = useState(false)
 
   const shareUrl = note.shareId
-    ? `${window.location.origin}/share/${note.shareId}`
+    ? `${window.location.origin}${sharePath(note.shareId)}`
     : ''
 
   const toggle = async (value: boolean) => {

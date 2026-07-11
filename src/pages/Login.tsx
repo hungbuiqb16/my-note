@@ -15,6 +15,7 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { VantaBackground } from '@/components/common/VantaBackground'
+import { ROUTES } from '@/constants/routes'
 
 type Mode = 'signin' | 'signup' | 'reset'
 
@@ -142,7 +143,7 @@ export function Login() {
           size="icon"
           className="absolute top-3 left-3 rounded-xl text-muted-foreground"
         >
-          <Link to="/about" aria-label="Giới thiệu & tính năng">
+          <Link to={ROUTES.about} aria-label="Giới thiệu & tính năng">
             <Info className="size-4" />
           </Link>
         </Button>

@@ -7,6 +7,7 @@ import {
 } from '@/services/notes'
 import { MarkdownPreview } from '@/components/common/MarkdownPreview'
 import { timeAgo } from '@/utils/time'
+import { ROUTES } from '@/constants/routes'
 
 type Status = 'loading' | 'ready' | 'notfound'
 
@@ -44,7 +45,7 @@ export function PublicNote() {
     <div className="min-h-screen">
       <header className="flex items-center justify-between border-b border-black/5 px-6 py-4 dark:border-white/5">
         <Link
-          to="/"
+          to={ROUTES.home}
           className="flex items-center gap-2 font-display text-lg font-bold tracking-tight"
         >
           <span className="grad-btn grid size-7 place-items-center rounded-lg text-white shadow-lift">
@@ -74,7 +75,7 @@ export function PublicNote() {
               Liên kết không tồn tại hoặc đã bị thu hồi.
             </p>
             <Link
-              to="/"
+              to={ROUTES.home}
               className="mt-4 inline-block text-sm font-medium text-primary hover:underline"
             >
               Về trang chủ

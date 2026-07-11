@@ -11,6 +11,7 @@ import {
 } from 'lucide-react'
 import { useTheme } from '@/hooks/useTheme'
 import { Button } from '@/components/ui/button'
+import { ROUTES } from '@/constants/routes'
 
 interface FeatureGroup {
   icon: typeof NotebookPen
@@ -50,7 +51,7 @@ export function Features() {
         {/* Top bar */}
         <div className="flex items-center justify-between">
           <Link
-            to="/"
+            to={ROUTES.home}
             className="flex items-center gap-2 font-display text-xl font-bold tracking-tight transition-opacity hover:opacity-80"
           >
             <span className="grad-btn grid size-7 place-items-center rounded-lg text-white shadow-lift">
@@ -95,7 +96,7 @@ export function Features() {
             size="lg"
             className="grad-btn mt-7 h-auto rounded-xl px-6 py-3 text-base font-semibold text-white shadow-lift"
           >
-            <Link to="/">
+            <Link to={ROUTES.home}>
               Sẵn sàng ghi lại ý tưởng đầu tiên
               <ArrowRight className="size-4" />
             </Link>

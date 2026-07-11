@@ -7,8 +7,12 @@ interface AuthState {
   user: User | null
   /** True once the initial session lookup has completed. */
   ready: boolean
+  /** True while a password-recovery link is being handled (show reset screen). */
+  recovery: boolean
   /** Loads the current session and subscribes to changes. Returns an unsubscribe fn. */
   init: () => () => void
+  /** Leave the password-recovery flow (after setting a new password or skipping). */
+  endRecovery: () => void
   signIn: (email: string, password: string) => Promise<void>
   signUp: (email: string, password: string) => Promise<void>
   /** Start an OAuth sign-in flow (redirects to the provider, then back). */
@@ -33,6 +37,7 @@ export const useAuth = create<AuthState>((set) => ({
   session: null,
   user: null,
   ready: false,
+  recovery: false,
 
   init: () => {
     void supabase.auth.getSession().then(({ data }) => {
@@ -45,12 +50,17 @@ export const useAuth = create<AuthState>((set) => ({
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange((event, session) => {
       set({ session, user: session?.user ?? null, ready: true })
+      // Clicking the reset-password email link signs the user in with a
+      // recovery session and fires this event — show the reset screen.
+      if (event === 'PASSWORD_RECOVERY') set({ recovery: true })
     })
 
     return () => subscription.unsubscribe()
   },
+
+  endRecovery: () => set({ recovery: false }),
 
   signIn: async (email, password) => {
     const { error } = await supabase.auth.signInWithPassword({

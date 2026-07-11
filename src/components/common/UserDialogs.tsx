@@ -566,7 +566,7 @@ export function PrivacyDialog({ open, onOpenChange }: DialogProps) {
             </div>
             <AlertDialog>
               <AlertDialogTrigger asChild>
-                <Button variant="destructive" disabled={deleting}>
+                <Button variant="secondary" disabled={deleting}>
                   <Trash2 />
                   {deleting ? 'Đang xóa…' : 'Xóa'}
                 </Button>

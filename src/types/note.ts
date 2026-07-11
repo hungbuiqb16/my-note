@@ -13,6 +13,8 @@ export interface Note {
   isEncrypted: boolean
   /** Last-update time in ms (derived from `updated_at`). */
   updated: number
+  /** Time the note was moved to trash in ms (undefined for active notes). */
+  deletedAt?: number
   /** Client-only: a new note not yet persisted (empty drafts are never saved). */
   draft?: boolean
   /** Client-only: DB row id once a draft is saved (the local `id` stays stable). */
@@ -32,4 +34,5 @@ export interface NoteRow {
   is_encrypted: boolean
   created_at: string
   updated_at: string
+  deleted_at: string | null
 }

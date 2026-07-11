@@ -27,6 +27,7 @@ export function AppLayout() {
   const load = useNotes((s) => s.load)
   const clear = useNotes((s) => s.clear)
   const discardIfEmpty = useNotes((s) => s.discardIfEmpty)
+  const setTrashView = useNotes((s) => s.setTrashView)
   const subscribeRealtime = useNotes((s) => s.subscribeRealtime)
   const loadVault = useVault((s) => s.loadMeta)
   const resetVault = useVault((s) => s.reset)
@@ -48,6 +49,7 @@ export function AppLayout() {
 
   const showGrid = () => {
     discardIfEmpty(currentId) // drop an untouched blank draft when leaving the editor
+    setTrashView(false) // logo / "Tất cả ghi chú" always exits the trash view
     setMode('all')
     setMobileView('main')
   }

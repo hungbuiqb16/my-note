@@ -374,15 +374,18 @@ export function Editor({ note, className, onBack }: EditorProps) {
               <AlertDialogHeader>
                 <AlertDialogTitle>Xóa ghi chú?</AlertDialogTitle>
                 <AlertDialogDescription>
-                  Ghi chú “{note.title || 'Chưa có tiêu đề'}” sẽ bị xóa vĩnh
-                  viễn.
+                  Ghi chú “{note.title || 'Chưa có tiêu đề'}” sẽ được chuyển
+                  vào thùng rác.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
                 <AlertDialogCancel>Hủy</AlertDialogCancel>
                 <AlertDialogAction
-                  onClick={() => remove(note.id)}
-                  className="bg-destructive text-white hover:bg-destructive/90"
+                  onClick={() => {
+                    void remove(note.id)
+                    toast.success('Đã chuyển vào thùng rác')
+                    onBack() // return to the all-notes page
+                  }}
                 >
                   Xóa
                 </AlertDialogAction>

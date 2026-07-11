@@ -12,6 +12,7 @@ function toNote(row: NoteRow): Note {
     shareId: row.share_id,
     isEncrypted: row.is_encrypted,
     updated: Date.parse(row.updated_at),
+    deletedAt: row.deleted_at ? Date.parse(row.deleted_at) : undefined,
   }
 }
 
@@ -79,6 +80,7 @@ export async function searchNotes(
     .from('notes')
     .select('*')
     .eq('user_id', userId)
+    .is('deleted_at', null)
     .textSearch('fts', query, { type: 'websearch', config: 'simple' })
     .order('pinned', { ascending: false })
     .order('updated_at', { ascending: false })
@@ -96,8 +98,21 @@ export async function fetchNotes(userId: string): Promise<Note[]> {
     .from('notes')
     .select('*')
     .eq('user_id', userId)
+    .is('deleted_at', null)
     .order('pinned', { ascending: false })
     .order('updated_at', { ascending: false })
+  if (error) throw error
+  return (data as NoteRow[]).map(toNote)
+}
+
+/** Notes currently in the trash for this user, most-recently-deleted first. */
+export async function fetchTrash(userId: string): Promise<Note[]> {
+  const { data, error } = await supabase
+    .from('notes')
+    .select('*')
+    .eq('user_id', userId)
+    .not('deleted_at', 'is', null)
+    .order('deleted_at', { ascending: false })
   if (error) throw error
   return (data as NoteRow[]).map(toNote)
 }
@@ -130,9 +145,44 @@ export async function updateNote(id: string, patch: NotePatch): Promise<void> {
   if (error) throw error
 }
 
+/**
+ * Move a note to the trash (soft delete). It stays recoverable for 30 days,
+ * then a pg_cron job purges it. Public sharing is turned off so a trashed
+ * note can't still be read via its share link.
+ */
 export async function deleteNote(id: string): Promise<void> {
+  const { error } = await supabase
+    .from('notes')
+    .update({ deleted_at: new Date().toISOString(), is_public: false })
+    .eq('id', id)
+  if (error) throw error
+}
+
+/** Restore a trashed note back to the active list. */
+export async function restoreNote(id: string): Promise<void> {
+  const { error } = await supabase
+    .from('notes')
+    .update({ deleted_at: null })
+    .eq('id', id)
+  if (error) throw error
+}
+
+/** Permanently delete a note (hard delete) — used for purging the trash. */
+export async function purgeNote(id: string): Promise<void> {
   const { error } = await supabase.from('notes').delete().eq('id', id)
   if (error) throw error
+}
+
+/** Permanently delete every trashed note for this user; returns the count. */
+export async function emptyTrash(userId: string): Promise<number> {
+  const { data, error } = await supabase
+    .from('notes')
+    .delete()
+    .eq('user_id', userId)
+    .not('deleted_at', 'is', null)
+    .select('id')
+  if (error) throw error
+  return data?.length ?? 0
 }
 
 interface ImportItem {
@@ -182,6 +232,7 @@ export async function exportNotes(userId: string): Promise<NoteRow[]> {
     .from('notes')
     .select('*')
     .eq('user_id', userId)
+    .is('deleted_at', null)
     .order('created_at', { ascending: true })
   if (error) throw error
   return data as NoteRow[]

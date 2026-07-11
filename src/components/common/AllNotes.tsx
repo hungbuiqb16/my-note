@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import {
   ChevronLeft,
   ChevronRight,
@@ -9,6 +9,7 @@ import {
   Menu,
   Pin,
   PinOff,
+  RotateCcw,
   Search,
   Settings,
   Share2,
@@ -19,7 +20,14 @@ import {
 import { toast } from 'sonner'
 import { selectVisibleNotes, useNotes } from '@/store/notes'
 import { useAuth } from '@/store/auth'
-import { exportNotes, importNotes } from '@/services/notes'
+import {
+  emptyTrash,
+  exportNotes,
+  fetchTrash,
+  importNotes,
+  purgeNote,
+  restoreNote,
+} from '@/services/notes'
 import { cleanupOrphanImages } from '@/services/storage'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -41,6 +49,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
 import { ShareDialog } from '@/components/common/ShareDialog'
+import { TrashNoteView } from '@/components/common/TrashNoteView'
 import { Highlight } from '@/components/common/Highlight'
 import { timeAgo } from '@/utils/time'
 import { cn } from '@/lib/utils'
@@ -116,7 +125,7 @@ function NoteCard({
   return (
     <div className="group relative">
       {dx > 0 && (
-        <div className="pointer-events-none absolute inset-0 flex items-center gap-2 rounded-xl bg-red-500 px-4 text-sm font-medium text-white">
+        <div className="pointer-events-none absolute inset-0 flex items-center gap-2 rounded-xl bg-destructive px-4 text-sm font-medium text-white">
           <Trash2 className="size-4" />
           Xóa
         </div>
@@ -230,6 +239,81 @@ function NoteCard({
   )
 }
 
+const RETENTION_DAYS = 30
+const DAY_MS = 24 * 60 * 60 * 1000
+
+// Days left before a trashed note is purged automatically.
+function daysLeft(deletedAt: number) {
+  const elapsed = (Date.now() - deletedAt) / DAY_MS
+  return Math.max(0, Math.ceil(RETENTION_DAYS - elapsed))
+}
+
+interface TrashCardProps {
+  note: Note
+  onOpen: (note: Note) => void
+  onRestore: (id: string) => void
+  onRequestPurge: (note: Note) => void
+}
+
+function TrashCard({ note, onOpen, onRestore, onRequestPurge }: TrashCardProps) {
+  return (
+    <div className="group relative">
+      <button
+        type="button"
+        onClick={() => onOpen(note)}
+        className="relative flex h-44 w-full flex-col rounded-xl border border-black/5 bg-card p-4 text-left transition-all hover:-translate-y-0.5 hover:shadow-lift focus-visible:ring-2 focus-visible:ring-primary dark:border-white/10 dark:bg-white/[.03]"
+      >
+        <div className="flex items-start justify-between gap-2">
+          <h3
+            className={cn(
+              'min-w-0 truncate font-semibold',
+              !note.title && 'font-normal text-muted-foreground italic',
+            )}
+          >
+            {note.title || 'Chưa có tiêu đề'}
+          </h3>
+          {note.isEncrypted && (
+            <Lock className="mt-0.5 size-3.5 shrink-0 text-primary" />
+          )}
+        </div>
+        {note.isEncrypted ? (
+          <p className="mt-1 flex flex-1 items-center gap-1.5 text-[13px] text-muted-foreground italic">
+            <Lock className="size-3.5" /> Nội dung được mã hóa
+          </p>
+        ) : (
+          <p className="mt-1 line-clamp-3 flex-1 text-[13px] whitespace-pre-wrap text-muted-foreground">
+            {note.content || 'Trống'}
+          </p>
+        )}
+        <span className="mt-2 text-[11px] text-muted-foreground/70">
+          Còn {note.deletedAt ? daysLeft(note.deletedAt) : RETENTION_DAYS} ngày
+        </span>
+      </button>
+
+      <div className="absolute right-2 bottom-2 flex items-center gap-1">
+        <Button
+          variant="ghost"
+          size="icon-sm"
+          onClick={() => onRestore(note.id)}
+          aria-label="Khôi phục"
+          className="rounded-lg text-muted-foreground shadow-none focus-visible:border-transparent focus-visible:ring-0"
+        >
+          <RotateCcw />
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon-sm"
+          onClick={() => onRequestPurge(note)}
+          aria-label="Xóa vĩnh viễn"
+          className="rounded-lg text-muted-foreground shadow-none hover:bg-destructive/10 hover:text-destructive focus-visible:border-transparent focus-visible:ring-0"
+        >
+          <Trash2 />
+        </Button>
+      </div>
+    </div>
+  )
+}
+
 export function AllNotes({ className, onOpen, onOpenSidebar }: AllNotesProps) {
   const notes = useNotes((s) => s.notes)
   const search = useNotes((s) => s.search)
@@ -237,6 +321,8 @@ export function AllNotes({ className, onOpen, onOpenSidebar }: AllNotesProps) {
   const searchResults = useNotes((s) => s.searchResults)
   const searching = useNotes((s) => s.searching)
   const activeTag = useNotes((s) => s.activeTag)
+  const trashView = useNotes((s) => s.trashView)
+  const setTrashView = useNotes((s) => s.setTrashView)
   const togglePin = useNotes((s) => s.togglePin)
   const remove = useNotes((s) => s.remove)
   const loadNotes = useNotes((s) => s.load)
@@ -253,6 +339,76 @@ export function AllNotes({ className, onOpen, onOpenSidebar }: AllNotesProps) {
   const importRef = useRef<HTMLInputElement>(null)
   const [dataBusy, setDataBusy] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
+  // Trash view (in the store so the logo / "Tất cả ghi chú" can exit it).
+  // null items = still loading.
+  const [trashItems, setTrashItems] = useState<Note[] | null>(null)
+  const [purgeTarget, setPurgeTarget] = useState<Note | null>(null)
+  const [emptyOpen, setEmptyOpen] = useState(false)
+  // Read-only preview of a trashed note.
+  const [previewNote, setPreviewNote] = useState<Note | null>(null)
+
+  // Fetch the trash whenever we enter the trash view.
+  useEffect(() => {
+    if (!trashView || !userId) return
+    let alive = true
+    fetchTrash(userId)
+      .then((rows) => alive && setTrashItems(rows))
+      .catch(() => {
+        if (!alive) return
+        setTrashItems([])
+        toast.error('Không tải được thùng rác')
+      })
+    return () => {
+      alive = false
+    }
+  }, [trashView, userId])
+
+  const closeTrash = () => {
+    setTrashView(false)
+    setTrashItems(null)
+    setPreviewNote(null)
+  }
+
+  const handleRestore = async (id: string) => {
+    setPreviewNote(null)
+    try {
+      await restoreNote(id)
+      setTrashItems((xs) => (xs ?? []).filter((n) => n.id !== id))
+      await loadNotes()
+      toast.success('Đã khôi phục ghi chú')
+    } catch {
+      toast.error('Không khôi phục được ghi chú')
+    }
+  }
+
+  const handlePurgeById = async (id: string) => {
+    setPreviewNote(null)
+    try {
+      await purgeNote(id)
+      setTrashItems((xs) => (xs ?? []).filter((n) => n.id !== id))
+      toast.success('Đã xóa vĩnh viễn')
+    } catch {
+      toast.error('Không xóa được ghi chú')
+    }
+  }
+
+  const confirmPurge = async () => {
+    if (!purgeTarget) return
+    await handlePurgeById(purgeTarget.id)
+    setPurgeTarget(null)
+  }
+
+  const confirmEmpty = async () => {
+    setEmptyOpen(false)
+    if (!userId) return
+    try {
+      const n = await emptyTrash(userId)
+      setTrashItems([])
+      toast.success(n > 0 ? `Đã xóa ${n} ghi chú` : 'Thùng rác trống')
+    } catch {
+      toast.error('Không dọn được thùng rác')
+    }
+  }
 
   const handleExport = async () => {
     if (!userId) return
@@ -371,32 +527,48 @@ export function AllNotes({ className, onOpen, onOpenSidebar }: AllNotesProps) {
   const confirmDelete = () => {
     if (!deleteTarget) return
     void remove(deleteTarget.id)
-    toast.success('Đã xóa ghi chú')
+    toast.success('Đã chuyển vào thùng rác')
     setDeleteTarget(null)
   }
 
   // Swipe-to-delete deletes immediately, without the confirm dialog.
   const handleSwipeDelete = (note: Note) => {
     void remove(note.id)
-    toast.success('Đã xóa ghi chú')
+    toast.success('Đã chuyển vào thùng rác')
   }
 
+  // The list currently shown: trashed notes in trash view, else active notes.
+  const displayList = trashView ? (trashItems ?? []) : visible
+
   const [page, setPage] = useState(1)
-  // Reset to page 1 when the filter changes (React's adjust-state-on-change
-  // pattern using state, not a ref).
-  const filterKey = `${search}::${activeTag ?? ''}`
+  // Reset to page 1 when the filter (or view) changes (React's
+  // adjust-state-on-change pattern using state, not a ref).
+  const filterKey = `${trashView ? 'trash' : 'notes'}::${search}::${activeTag ?? ''}`
   const [prevFilter, setPrevFilter] = useState(filterKey)
   if (prevFilter !== filterKey) {
     setPrevFilter(filterKey)
     setPage(1)
   }
 
-  const totalPages = Math.max(1, Math.ceil(visible.length / PAGE_SIZE))
+  const totalPages = Math.max(1, Math.ceil(displayList.length / PAGE_SIZE))
   const currentPage = Math.min(page, totalPages)
-  const pageItems = visible.slice(
+  const pageItems = displayList.slice(
     (currentPage - 1) * PAGE_SIZE,
     currentPage * PAGE_SIZE,
   )
+
+  // Full-page, read-only view when a trashed note is opened.
+  if (trashView && previewNote) {
+    return (
+      <TrashNoteView
+        note={previewNote}
+        className={className}
+        onBack={() => setPreviewNote(null)}
+        onRestore={handleRestore}
+        onPurge={handlePurgeById}
+      />
+    )
+  }
 
   return (
     <main
@@ -414,93 +586,159 @@ export function AllNotes({ className, onOpen, onOpenSidebar }: AllNotesProps) {
           onChange={handleImport}
         />
 
-        <button
-          type="button"
-          onClick={onOpenSidebar}
-          aria-label="Mở menu"
-          className="shrink-0 text-muted-foreground md:hidden"
-        >
-          <Menu className="size-5" />
-        </button>
-
-        {searchOpen ? (
-          <div className="relative flex-1">
-            <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              autoFocus
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Tìm kiếm…"
-              className="h-auto rounded-xl py-2 pr-9 pl-9"
-            />
+        {trashView ? (
+          <>
             <button
               type="button"
-              onClick={() => {
-                setSearch('')
-                setSearchOpen(false)
-              }}
-              aria-label="Đóng tìm kiếm"
-              className="absolute top-1/2 right-2.5 grid size-6 -translate-y-1/2 place-items-center rounded-full text-muted-foreground transition-colors hover:bg-black/[.06] hover:text-foreground dark:hover:bg-white/[.08]"
+              onClick={closeTrash}
+              className="flex items-center gap-1 text-sm font-medium text-primary"
             >
-              <X className="size-3.5" />
+              <ChevronLeft className="size-4" />
+              Tất cả ghi chú
             </button>
-          </div>
+            <h2 className="pointer-events-none absolute inset-x-0 text-center font-display text-lg font-bold tracking-tight">
+              Thùng rác
+              <span className="ml-1.5 font-sans text-sm font-medium text-muted-foreground">
+                ({trashItems?.length ?? 0})
+              </span>
+            </h2>
+            <div className="ml-auto flex items-center gap-1">
+              {trashItems && trashItems.length > 0 && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setEmptyOpen(true)}
+                  className="rounded-xl text-muted-foreground hover:text-destructive"
+                >
+                  <Trash2 className="size-4" />
+                  Dọn sạch
+                </Button>
+              )}
+            </div>
+          </>
         ) : (
-          <h2 className="pointer-events-none absolute inset-x-0 text-center font-display text-lg font-bold tracking-tight">
-            Tất cả ghi chú
-            <span className="ml-1.5 font-sans text-sm font-medium text-muted-foreground">
-              ({notes.length})
-            </span>
-          </h2>
-        )}
-
-        <div className="ml-auto flex items-center gap-1">
-          {!searchOpen && (
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setSearchOpen(true)}
-              aria-label="Tìm kiếm"
-              className="rounded-xl text-muted-foreground md:hidden"
+          <>
+            <button
+              type="button"
+              onClick={onOpenSidebar}
+              aria-label="Mở menu"
+              className="shrink-0 text-muted-foreground md:hidden"
             >
-              <Search className="size-4" />
-            </Button>
-          )}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                disabled={dataBusy}
-                aria-label="Dữ liệu & cài đặt"
-                className="rounded-xl text-muted-foreground"
-              >
-                <Settings className="size-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem
-                disabled={notes.length === 0}
-                onClick={handleExport}
-              >
-                <Download />
-                Xuất dữ liệu
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => importRef.current?.click()}>
-                <Upload />
-                Nhập dữ liệu
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={handleCleanup}>
-                <Eraser />
-                Xóa ảnh không dùng
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
+              <Menu className="size-5" />
+            </button>
+
+            {searchOpen ? (
+              <div className="relative flex-1">
+                <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  autoFocus
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="Tìm kiếm…"
+                  className="h-auto rounded-xl py-2 pr-9 pl-9"
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSearch('')
+                    setSearchOpen(false)
+                  }}
+                  aria-label="Đóng tìm kiếm"
+                  className="absolute top-1/2 right-2.5 grid size-6 -translate-y-1/2 place-items-center rounded-full text-muted-foreground transition-colors hover:bg-black/[.06] hover:text-foreground dark:hover:bg-white/[.08]"
+                >
+                  <X className="size-3.5" />
+                </button>
+              </div>
+            ) : (
+              <h2 className="pointer-events-none absolute inset-x-0 text-center font-display text-lg font-bold tracking-tight">
+                Tất cả ghi chú
+                <span className="ml-1.5 font-sans text-sm font-medium text-muted-foreground">
+                  ({notes.length})
+                </span>
+              </h2>
+            )}
+
+            <div className="ml-auto flex items-center gap-1">
+              {!searchOpen && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setSearchOpen(true)}
+                  aria-label="Tìm kiếm"
+                  className="rounded-xl text-muted-foreground md:hidden"
+                >
+                  <Search className="size-4" />
+                </Button>
+              )}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    disabled={dataBusy}
+                    aria-label="Dữ liệu & cài đặt"
+                    className="rounded-xl text-muted-foreground"
+                  >
+                    <Settings className="size-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem
+                    disabled={notes.length === 0}
+                    onClick={handleExport}
+                  >
+                    <Download />
+                    Xuất dữ liệu
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => importRef.current?.click()}>
+                    <Upload />
+                    Nhập dữ liệu
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleCleanup}>
+                    <Eraser />
+                    Xóa ảnh không dùng
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => {
+                      setPreviewNote(null)
+                      setTrashItems(null)
+                      setTrashView(true)
+                    }}
+                  >
+                    <Trash2 />
+                    Thùng rác
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          </>
+        )}
       </div>
 
       <div className="flex-1 overflow-y-auto p-4 md:p-6">
-        {isSearching && searching && searchResults === null ? (
+        {trashView ? (
+          trashItems === null ? (
+            <p className="py-16 text-center text-sm text-muted-foreground">
+              Đang tải…
+            </p>
+          ) : trashItems.length === 0 ? (
+            <p className="py-16 text-center text-sm text-muted-foreground">
+              Thùng rác trống.
+            </p>
+          ) : (
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {pageItems.map((note) => (
+                <TrashCard
+                  key={note.id}
+                  note={note}
+                  onOpen={setPreviewNote}
+                  onRestore={handleRestore}
+                  onRequestPurge={setPurgeTarget}
+                />
+              ))}
+            </div>
+          )
+        ) : isSearching && searching && searchResults === null ? (
           <p className="py-16 text-center text-sm text-muted-foreground">
             Đang tìm kiếm…
           </p>
@@ -565,6 +803,54 @@ export function AllNotes({ className, onOpen, onOpenSidebar }: AllNotesProps) {
       )}
 
       <AlertDialog
+        open={purgeTarget !== null}
+        onOpenChange={(o) => !o && setPurgeTarget(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Xóa vĩnh viễn?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Ghi chú “{purgeTarget?.title || 'Chưa có tiêu đề'}” sẽ bị xóa vĩnh
+              viễn, không thể khôi phục.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Hủy</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmPurge}
+              className="bg-destructive text-white hover:bg-destructive/90"
+            >
+              Xóa vĩnh viễn
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog
+        open={emptyOpen}
+        onOpenChange={(o) => !o && setEmptyOpen(false)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Dọn sạch thùng rác?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Toàn bộ {trashItems?.length ?? 0} ghi chú trong thùng rác sẽ bị
+              xóa vĩnh viễn, không thể khôi phục.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Hủy</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmEmpty}
+              className="bg-destructive text-white hover:bg-destructive/90"
+            >
+              Xóa tất cả
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog
         open={deleteTarget !== null}
         onOpenChange={(o) => !o && setDeleteTarget(null)}
       >
@@ -572,18 +858,13 @@ export function AllNotes({ className, onOpen, onOpenSidebar }: AllNotesProps) {
           <AlertDialogHeader>
             <AlertDialogTitle>Xóa ghi chú?</AlertDialogTitle>
             <AlertDialogDescription>
-              Ghi chú “{deleteTarget?.title || 'Chưa có tiêu đề'}” sẽ bị xóa
-              vĩnh viễn.
+              Ghi chú “{deleteTarget?.title || 'Chưa có tiêu đề'}” sẽ được
+              chuyển vào thùng rác.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Hủy</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={confirmDelete}
-              className="bg-destructive text-white hover:bg-destructive/90"
-            >
-              Xóa
-            </AlertDialogAction>
+            <AlertDialogAction onClick={confirmDelete}>Xóa</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

@@ -14,9 +14,12 @@ interface NotesState {
   searchResults: Note[] | null
   searching: boolean
   activeTag: string | null
+  /** Whether the notes pane is showing the trash instead of active notes. */
+  trashView: boolean
   loading: boolean
   setSearch: (search: string) => void
   setActiveTag: (tag: string | null) => void
+  setTrashView: (v: boolean) => void
   load: () => Promise<void>
   clear: () => void
   select: (id: string) => void
@@ -141,7 +144,8 @@ export const useNotes = create<NotesState>((set, get) => {
     if (!note || !isEmpty(note)) return
     cancelTimer(id)
     set((s) => ({ notes: s.notes.filter((n) => n.id !== id) }))
-    if (!note.draft) void api.deleteNote(dbId(note)).catch(() => {})
+    // An empty note is discarded outright — hard delete, don't fill the trash.
+    if (!note.draft) void api.purgeNote(dbId(note)).catch(() => {})
   }
 
   return {
@@ -151,7 +155,10 @@ export const useNotes = create<NotesState>((set, get) => {
     searchResults: null,
     searching: false,
     activeTag: null,
+    trashView: false,
     loading: false,
+
+    setTrashView: (trashView) => set({ trashView }),
 
     setSearch: (search) => {
       set({ search })
@@ -210,6 +217,7 @@ export const useNotes = create<NotesState>((set, get) => {
         searchResults: null,
         searching: false,
         activeTag: null,
+        trashView: false,
       })
     },
 
@@ -253,6 +261,26 @@ export const useNotes = create<NotesState>((set, get) => {
         }
 
         const row = payload.new as NoteRow
+
+        // A note moved to trash (deleted_at set) drops out of the active list.
+        if (row.deleted_at) {
+          set((s) => {
+            const target = s.notes.find(
+              (n) => n.id === row.id || n.remoteId === row.id,
+            )
+            if (!target) return s
+            const notes = s.notes.filter((n) => n !== target)
+            return {
+              notes,
+              currentId:
+                s.currentId === target.id
+                  ? (notes[0]?.id ?? null)
+                  : s.currentId,
+            }
+          })
+          return
+        }
+
         const incoming = api.rowToNote(row)
         set((s) => {
           const idx = s.notes.findIndex(

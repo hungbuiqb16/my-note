@@ -76,7 +76,8 @@
       "Bash(wsl.exe -d Ubuntu-24.04 -- bash -lc 'export PATH=\"$HOME/.nvm/versions/node/v22.21.1/bin:$PATH\"; cd ~/personal/my-note && npm run build 2>&1 | grep -E \"error|Error|built\" | tail -3; echo \"---check css---\"; grep -o \"svg\\\\]:hidden[^}]*}\" dist/assets/*.css | head -3; echo done')",
       "Bash(wsl.exe -d Ubuntu-24.04 -- bash -lc 'cd ~/personal/my-note && grep -o \"display:none[^;}]*\" dist/assets/*.css | sort | uniq -c | head; echo \"---arbitrary hidden classes---\"; grep -oE \"\\\\.\\\\\\\\\\\\\\\\\\\\[&[^{]*hidden[^{]*\\\\{[^}]*\\\\}\" dist/assets/*.css | head -5')",
       "Bash(wsl.exe -d Ubuntu-24.04 -- bash -lc 'cd ~/personal/my-note && grep -oE \"[^{}]*\\\\{display:none!important\\\\}\" dist/assets/*.css | head')",
-      "Bash(wsl.exe -d Ubuntu-24.04 -- bash -lc 'export PATH=\"$HOME/.nvm/versions/node/v22.21.1/bin:$PATH\"; cd ~/personal/my-note && npm run build 2>&1 | grep -E \"error|Error|built\" | tail -3; npx eslint src/store/vault.ts src/utils/crypto.ts 2>&1 | tail -4; echo done')"
+      "Bash(wsl.exe -d Ubuntu-24.04 -- bash -lc 'export PATH=\"$HOME/.nvm/versions/node/v22.21.1/bin:$PATH\"; cd ~/personal/my-note && npm run build 2>&1 | grep -E \"error|Error|built\" | tail -3; npx eslint src/store/vault.ts src/utils/crypto.ts 2>&1 | tail -4; echo done')",
+      "Bash(wsl.exe -d Ubuntu-24.04 -- bash -lc 'export PATH=\"$HOME/.nvm/versions/node/v22.21.1/bin:$PATH\"; cd ~/personal/my-note && npm run build 2>&1 | grep -E \"error|Error|built\" | tail -3; npx eslint src/pages/PublicNote.tsx 2>&1 | tail -4; echo done')"
     ]
   }
 }

@@ -1,17 +1,20 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { Eye, Loader2, Sparkles } from 'lucide-react'
+import { Eye, Loader2, Moon, Sparkles, Sun } from 'lucide-react'
 import {
   fetchPublicNote,
   type PublicNote as PublicNoteData,
 } from '@/services/notes'
 import { MarkdownPreview } from '@/components/common/MarkdownPreview'
+import { Button } from '@/components/ui/button'
+import { useTheme } from '@/hooks/useTheme'
 import { timeAgo } from '@/utils/time'
 import { ROUTES } from '@/constants/routes'
 
 type Status = 'loading' | 'ready' | 'notfound'
 
 export function PublicNote() {
+  const { theme, toggle } = useTheme()
   const { shareId } = useParams<{ shareId: string }>()
   const [status, setStatus] = useState<Status>('loading')
   const [note, setNote] = useState<PublicNoteData | null>(null)
@@ -55,10 +58,25 @@ export function PublicNote() {
             h<span className="grad-text">note</span>
           </span>
         </Link>
-        <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground">
-          <Eye className="size-3.5" />
-          Chỉ đọc
-        </span>
+        <div className="flex items-center gap-2">
+          <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground">
+            <Eye className="size-3.5" />
+            Chỉ đọc
+          </span>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={toggle}
+            aria-label="Đổi giao diện sáng / tối"
+            className="rounded-xl text-muted-foreground"
+          >
+            {theme === 'dark' ? (
+              <Moon className="size-4" />
+            ) : (
+              <Sun className="size-4" />
+            )}
+          </Button>
+        </div>
       </header>
 
       <main className="mx-auto max-w-3xl px-6 py-10 md:py-16">

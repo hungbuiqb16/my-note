@@ -36,7 +36,6 @@ built with React, TypeScript and Vite, with a Supabase backend (Postgres + Auth)
   micro-interactions.
 - 📱 Responsive two-pane layout (list ⇄ editor on mobile), swipe-to-delete, FAB,
   keyboard shortcuts (`Ctrl/⌘+N` new note, `Ctrl/⌘+K` search).
-- 🛬 Public landing page at `/about`.
 
 ## Tech Stack
 

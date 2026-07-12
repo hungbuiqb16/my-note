@@ -7,6 +7,10 @@ export type FormatAction =
   | 'checklist'
   | 'quote'
   | 'codeBlock'
+  | 'alignLeft'
+  | 'alignCenter'
+  | 'alignRight'
+  | 'alignJustify'
 
 export interface FormatResult {
   value: string
@@ -80,6 +84,15 @@ export function applyFormat(
       return toggleLinePrefix(text, start, end, '> ')
     case 'codeBlock':
       return codeBlock(text, start, end)
+    // Alignment via a raw <div align="…"> (allowed by the sanitize schema).
+    case 'alignLeft':
+      return wrap(text, start, end, '<div align="left">', '</div>')
+    case 'alignCenter':
+      return wrap(text, start, end, '<div align="center">', '</div>')
+    case 'alignRight':
+      return wrap(text, start, end, '<div align="right">', '</div>')
+    case 'alignJustify':
+      return wrap(text, start, end, '<div align="justify">', '</div>')
   }
 }
 

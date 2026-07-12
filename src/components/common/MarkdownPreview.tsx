@@ -1,7 +1,19 @@
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import rehypeHighlight from 'rehype-highlight'
+import rehypeRaw from 'rehype-raw'
+import rehypeSanitize, { defaultSchema } from 'rehype-sanitize'
 import { cn } from '@/lib/utils'
+
+// Allow a small, safe set of raw HTML (a `<div align="…">` for text alignment)
+// while stripping anything dangerous (scripts, event handlers, etc.).
+const sanitizeSchema = {
+  ...defaultSchema,
+  attributes: {
+    ...defaultSchema.attributes,
+    div: [...(defaultSchema.attributes?.div ?? []), 'align'],
+  },
+}
 
 interface MarkdownPreviewProps {
   content: string
@@ -22,7 +34,11 @@ export function MarkdownPreview({
     <div className={cn('md-preview prose prose-sm max-w-none', className)}>
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
-        rehypePlugins={[[rehypeHighlight, { ignoreMissing: true }]]}
+        rehypePlugins={[
+          rehypeRaw,
+          [rehypeSanitize, sanitizeSchema],
+          [rehypeHighlight, { ignoreMissing: true }],
+        ]}
         components={{
           input: ({ type, checked }) => {
             if (type !== 'checkbox') return null

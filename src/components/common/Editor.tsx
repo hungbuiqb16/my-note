@@ -8,6 +8,10 @@ import {
   useState,
 } from 'react'
 import {
+  AlignCenter,
+  AlignJustify,
+  AlignLeft,
+  AlignRight,
   Bold,
   ChevronLeft,
   Code,
@@ -91,6 +95,17 @@ const FORMAT_BUTTONS: {
   { action: 'quote', icon: Quote, label: 'Trích dẫn' },
   { action: 'inlineCode', icon: Code, label: 'Mã inline' },
   { action: 'codeBlock', icon: SquareCode, label: 'Khối mã' },
+]
+
+const ALIGN_BUTTONS: {
+  action: FormatAction
+  icon: typeof AlignLeft
+  label: string
+}[] = [
+  { action: 'alignLeft', icon: AlignLeft, label: 'Căn trái' },
+  { action: 'alignCenter', icon: AlignCenter, label: 'Căn giữa' },
+  { action: 'alignRight', icon: AlignRight, label: 'Căn phải' },
+  { action: 'alignJustify', icon: AlignJustify, label: 'Căn đều' },
 ]
 
 interface EditorProps {
@@ -422,6 +437,41 @@ export function Editor({ note, className, onBack }: EditorProps) {
               <TooltipContent>{label}</TooltipContent>
             </Tooltip>
           ))}
+
+          {/* Text alignment */}
+          <DropdownMenu>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon-sm"
+                    className="shrink-0 rounded-lg text-muted-foreground"
+                  >
+                    <AlignCenter className="size-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+              </TooltipTrigger>
+              <TooltipContent>Căn lề</TooltipContent>
+            </Tooltip>
+            <DropdownMenuContent align="start" className="w-auto">
+              <div className="flex gap-0.5 p-0.5">
+                {ALIGN_BUTTONS.map(({ action, icon: Icon, label }) => (
+                  <Button
+                    key={action}
+                    variant="ghost"
+                    size="icon-sm"
+                    onClick={() => applyAction(action)}
+                    aria-label={label}
+                    title={label}
+                    className="rounded-lg text-muted-foreground"
+                  >
+                    <Icon className="size-4" />
+                  </Button>
+                ))}
+              </div>
+            </DropdownMenuContent>
+          </DropdownMenu>
 
           <span className="mx-1 h-4 w-px shrink-0 bg-border" />
           <input

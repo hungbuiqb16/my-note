@@ -82,7 +82,9 @@
       "Bash(wsl.exe -d Ubuntu-24.04 -- bash -lc 'cd ~/personal/my-note && grep -o \"bg-red-100\\\\|bg-sky-100\\\\|bg-violet-100\\\\|bg-teal-100\" dist/assets/*.css | sort -u; echo done')",
       "Bash(wsl.exe -d Ubuntu-24.04 -- bash -lc 'export PATH=\"$HOME/.nvm/versions/node/v22.21.1/bin:$PATH\"; cd ~/personal/my-note && npm run build 2>&1 | grep -E \"error|Error|built\" | tail -5; echo \"---LINT---\"; npx eslint src/components/common/Editor.tsx 2>&1 | tail -10; echo done')",
       "Bash(wsl.exe -d Ubuntu-24.04 -- bash -lc 'export PATH=\"$HOME/.nvm/versions/node/v22.21.1/bin:$PATH\"; cd ~/personal/my-note && npm run build 2>&1 | grep -E \"error|Error|built\" | tail -5; echo \"---LINT---\"; npx eslint src/components/common/Editor.tsx 2>&1 | tail -8; echo done')",
-      "Bash(wsl.exe -d Ubuntu-24.04 -- bash -lc 'export PATH=\"$HOME/.nvm/versions/node/v22.21.1/bin:$PATH\"; cd ~/personal/my-note && npm run build 2>&1 | grep -E \"error|Error|built\" | tail -3; npx eslint src/components/common/Editor.tsx 2>&1 | tail -6; echo done')"
+      "Bash(wsl.exe -d Ubuntu-24.04 -- bash -lc 'export PATH=\"$HOME/.nvm/versions/node/v22.21.1/bin:$PATH\"; cd ~/personal/my-note && npm run build 2>&1 | grep -E \"error|Error|built\" | tail -3; npx eslint src/components/common/Editor.tsx 2>&1 | tail -6; echo done')",
+      "Bash(wsl.exe -d Ubuntu-24.04 -- bash -lc 'export PATH=\"$HOME/.nvm/versions/node/v22.21.1/bin:$PATH\"; cd ~/personal/my-note && npm install rehype-raw rehype-sanitize 2>&1 | tail -5; echo done')",
+      "Bash(wsl.exe -d Ubuntu-24.04 -- bash -lc 'export PATH=\"$HOME/.nvm/versions/node/v22.21.1/bin:$PATH\"; cd ~/personal/my-note && npm run build 2>&1 | grep -E \"error|Error|built\" | tail -5; echo \"---LINT---\"; npx eslint src/components/common/Editor.tsx src/utils/markdown.ts src/components/common/MarkdownPreview.tsx 2>&1 | tail -8; echo done')"
     ]
   }
 }

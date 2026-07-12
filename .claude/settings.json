@@ -70,7 +70,8 @@
       "Bash(wsl.exe -d Ubuntu-24.04 -- bash -lc 'export PATH=\"$HOME/.nvm/versions/node/v22.21.1/bin:$PATH\"; cd ~/personal/my-note && npx eslint src/pages/Features.tsx 2>&1 | tail -4; echo done')",
       "Bash(wsl.exe -d Ubuntu-24.04 -- bash -lc 'export PATH=\"$HOME/.nvm/versions/node/v22.21.1/bin:$PATH\"; cd ~/personal/my-note && npm run build 2>&1 | grep -E \"error|Error|built\" | tail -5; echo \"---LINT---\"; npx eslint src 2>&1 | tail -10; echo done')",
       "Bash(wsl.exe -d Ubuntu-24.04 -- bash -lc 'export PATH=\"$HOME/.nvm/versions/node/v22.21.1/bin:$PATH\"; cd ~/personal/my-note && npm run build 2>&1 | grep -E \"error|Error|built\" | tail -3; npx eslint src/store/auth.ts 2>&1 | tail -4; echo done')",
-      "Bash(wsl.exe -d Ubuntu-24.04 -- bash -lc 'export PATH=\"$HOME/.nvm/versions/node/v22.21.1/bin:$PATH\"; cd ~/personal/my-note && npx eslint src/pages/Login.tsx 2>&1 | tail -4; echo done')"
+      "Bash(wsl.exe -d Ubuntu-24.04 -- bash -lc 'export PATH=\"$HOME/.nvm/versions/node/v22.21.1/bin:$PATH\"; cd ~/personal/my-note && npx eslint src/pages/Login.tsx 2>&1 | tail -4; echo done')",
+      "Bash(wsl.exe -d Ubuntu-24.04 -- bash -lc 'export PATH=\"$HOME/.nvm/versions/node/v22.21.1/bin:$PATH\"; cd ~/personal/my-note && npm run build 2>&1 | grep -E \"error|Error|built\" | tail -3; npx eslint src/services/notes.ts 2>&1 | tail -4; echo done')"
     ]
   }
 }

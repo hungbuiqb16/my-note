@@ -72,17 +72,32 @@ export async function fetchPublicNote(
 /** Map a raw DB row to a Note (used by realtime handlers). */
 export { toNote as rowToNote }
 
-/** Server-side full-text search (title + content) for the current user. */
+/**
+ * Server-side full-text search (title + content) for the current user.
+ * Builds a prefix `to_tsquery` (each word gets `:*`) so partial words match —
+ * e.g. "mark" finds "Markdown" without typing the whole word.
+ */
 export async function searchNotes(
   userId: string,
   query: string,
 ): Promise<Note[]> {
+  const tsQuery = query
+    .trim()
+    .split(/\s+/)
+    // Strip tsquery-special chars, keeping letters/numbers (incl. Vietnamese).
+    .map((word) => word.replace(/[^\p{L}\p{N}]/gu, ''))
+    .filter(Boolean)
+    .map((word) => `${word}:*`)
+    .join(' & ')
+  if (!tsQuery) return []
+
   const { data, error } = await supabase
     .from('notes')
     .select('*')
     .eq('user_id', userId)
     .is('deleted_at', null)
-    .textSearch('fts', query, { type: 'websearch', config: 'simple' })
+    // No `type` → to_tsquery, which supports the `:*` prefix operator.
+    .textSearch('fts', tsQuery, { config: 'simple' })
     .order('pinned', { ascending: false })
     .order('updated_at', { ascending: false })
   if (error) throw error

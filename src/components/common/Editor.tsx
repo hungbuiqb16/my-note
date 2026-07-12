@@ -18,6 +18,7 @@ import {
   List,
   ListChecks,
   Lock,
+  Palette,
   Pencil,
   Pin,
   Quote,
@@ -33,6 +34,11 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -58,6 +64,7 @@ import {
   toggleTaskAtIndex,
   type FormatAction,
 } from '@/utils/markdown'
+import { NOTE_COLORS, noteColorBg } from '@/constants/noteColors'
 import { cn } from '@/lib/utils'
 import type { Note } from '@/types/note'
 
@@ -97,6 +104,7 @@ export function Editor({ note, className, onBack }: EditorProps) {
   const remove = useNotes((s) => s.remove)
   const togglePin = useNotes((s) => s.togglePin)
   const setTags = useNotes((s) => s.setTags)
+  const setColor = useNotes((s) => s.setColor)
   const allNotes = useNotes((s) => s.notes)
   const tagSuggestions = useMemo(() => selectAllTags(allNotes), [allNotes])
   const userId = useAuth((s) => s.user?.id)
@@ -234,7 +242,8 @@ export function Editor({ note, className, onBack }: EditorProps) {
   return (
     <main
       className={cn(
-        'flex h-full flex-1 flex-col overflow-hidden border border-black/5 bg-card md:rounded-2xl md:shadow-soft dark:border-white/5',
+        'flex h-full flex-1 flex-col overflow-hidden border border-black/5 bg-card transition-colors md:rounded-2xl md:shadow-soft dark:border-white/5',
+        note.color && noteColorBg(note.color),
         className,
       )}
     >
@@ -374,8 +383,8 @@ export function Editor({ note, className, onBack }: EditorProps) {
               <AlertDialogHeader>
                 <AlertDialogTitle>Xóa ghi chú?</AlertDialogTitle>
                 <AlertDialogDescription>
-                  Ghi chú “{note.title || 'Chưa có tiêu đề'}” sẽ được chuyển
-                  vào thùng rác.
+                  Ghi chú “{note.title || 'Chưa có tiêu đề'}” sẽ được chuyển vào
+                  thùng rác.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
@@ -439,6 +448,49 @@ export function Editor({ note, className, onBack }: EditorProps) {
             </TooltipTrigger>
             <TooltipContent>Chèn ảnh (hoặc dán / kéo-thả)</TooltipContent>
           </Tooltip>
+
+          <span className="mx-1 h-4 w-px shrink-0 bg-border" />
+          {/* Background color picker */}
+          <DropdownMenu>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon-sm"
+                    aria-label="Lựa chọn nền"
+                    className={cn(
+                      'shrink-0 rounded-lg text-muted-foreground',
+                      note.color && 'text-primary',
+                    )}
+                  >
+                    <Palette className="size-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+              </TooltipTrigger>
+              <TooltipContent>Lựa chọn nền</TooltipContent>
+            </Tooltip>
+            <DropdownMenuContent align="start" className="w-auto">
+              <div className="grid grid-cols-5 gap-1.5 p-1">
+                {NOTE_COLORS.map((c) => (
+                  <button
+                    key={c.key}
+                    type="button"
+                    onClick={() => setColor(note.id, c.key)}
+                    aria-label={c.label}
+                    title={c.label}
+                    className={cn(
+                      'size-7 rounded-full border transition',
+                      c.bg || 'bg-card',
+                      note.color === c.key
+                        ? 'border-primary ring-2 ring-primary'
+                        : 'border-black/10 hover:border-primary/50 dark:border-white/15',
+                    )}
+                  />
+                ))}
+              </div>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       )}
 

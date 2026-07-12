@@ -33,6 +33,7 @@ interface NotesState {
   discardIfEmpty: (id: string | null) => void
   update: (patch: Partial<Pick<Note, 'title' | 'content'>>) => void
   setTags: (id: string, tags: string[]) => Promise<void>
+  setColor: (id: string, color: string) => Promise<void>
   setPublic: (id: string, isPublic: boolean) => Promise<void>
   /** Toggle encryption, replacing content with ciphertext/plaintext. */
   applyEncryption: (
@@ -97,6 +98,7 @@ export const useNotes = create<NotesState>((set, get) => {
           content: note.content,
           pinned: note.pinned,
           tags: note.tags,
+          color: note.color,
         })
         .then((row) => {
           inserting.delete(id)
@@ -368,6 +370,7 @@ export const useNotes = create<NotesState>((set, get) => {
         content: '',
         pinned: false,
         tags: [],
+        color: '',
         isPublic: false,
         shareId: '',
         isEncrypted: false,
@@ -410,6 +413,24 @@ export const useNotes = create<NotesState>((set, get) => {
           notes: s.notes.map((n) => (n.id === id ? { ...n, tags: prev } : n)),
         }))
         toast.error('Không cập nhật được tag')
+      }
+    },
+
+    setColor: async (id, color) => {
+      const note = get().notes.find((n) => n.id === id)
+      if (!note) return
+      const prev = note.color
+      set((s) => ({
+        notes: s.notes.map((n) => (n.id === id ? { ...n, color } : n)),
+      }))
+      if (note.draft) return // persisted when the note is first saved
+      try {
+        await api.updateNote(dbId(note), { color })
+      } catch {
+        set((s) => ({
+          notes: s.notes.map((n) => (n.id === id ? { ...n, color: prev } : n)),
+        }))
+        toast.error('Không cập nhật được màu')
       }
     },
 

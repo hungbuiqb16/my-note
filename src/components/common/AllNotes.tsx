@@ -59,6 +59,7 @@ import { ShareDialog } from '@/components/common/ShareDialog'
 import { TrashNoteView } from '@/components/common/TrashNoteView'
 import { Highlight } from '@/components/common/Highlight'
 import { timeAgo } from '@/utils/time'
+import { noteColorBg } from '@/constants/noteColors'
 import { cn } from '@/lib/utils'
 import type { Note } from '@/types/note'
 
@@ -151,7 +152,10 @@ function NoteCard({
           touchAction: 'pan-y',
           background: dx > 0 ? 'var(--card)' : undefined,
         }}
-        className="relative flex h-44 w-full flex-col rounded-xl border border-black/10 bg-card p-4 text-left shadow-soft transition-all select-none hover:-translate-y-[3px] hover:border-brand-2/60 hover:shadow-lift focus-visible:ring-2 focus-visible:ring-primary dark:border-white/10 dark:bg-white/[.03] dark:hover:border-brand-2/60"
+        className={cn(
+          'relative flex h-44 w-full flex-col rounded-xl border border-black/10 bg-card p-4 text-left shadow-soft transition-all select-none hover:-translate-y-[3px] hover:border-brand-2/60 hover:shadow-lift focus-visible:ring-2 focus-visible:ring-primary dark:border-white/10 dark:bg-white/[.03] dark:hover:border-brand-2/60',
+          note.color && noteColorBg(note.color),
+        )}
       >
         <div className="flex items-start justify-between gap-2">
           <h3

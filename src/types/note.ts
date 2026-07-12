@@ -5,6 +5,8 @@ export interface Note {
   content: string
   pinned: boolean
   tags: string[]
+  /** Background color key (see NOTE_COLORS); '' = default. */
+  color: string
   /** Whether the note is shared publicly (read-only). */
   isPublic: boolean
   /** Unguessable id used in the public share URL. */
@@ -31,6 +33,7 @@ export interface NoteRow {
   content: string
   pinned: boolean
   tags: string[] | null
+  color: string | null
   is_public: boolean
   share_id: string
   is_encrypted: boolean

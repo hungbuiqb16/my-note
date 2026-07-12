@@ -8,6 +8,7 @@ function toNote(row: NoteRow): Note {
     content: row.content,
     pinned: row.pinned,
     tags: row.tags ?? [],
+    color: row.color ?? '',
     isPublic: row.is_public,
     shareId: row.share_id,
     isEncrypted: row.is_encrypted,
@@ -144,7 +145,9 @@ export async function fetchTrash(userId: string): Promise<Note[]> {
   return (data as NoteRow[]).map(toNote)
 }
 
-type NotePatch = Partial<Pick<Note, 'title' | 'content' | 'pinned' | 'tags'>>
+type NotePatch = Partial<
+  Pick<Note, 'title' | 'content' | 'pinned' | 'tags' | 'color'>
+>
 
 /** Insert a note owned by the current user, optionally with initial fields. */
 export async function createNote(
@@ -159,6 +162,7 @@ export async function createNote(
       content: fields.content ?? '',
       pinned: fields.pinned ?? false,
       tags: fields.tags ?? [],
+      color: fields.color ?? '',
     })
     .select('*')
     .single()

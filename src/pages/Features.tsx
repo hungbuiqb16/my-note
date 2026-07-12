@@ -9,6 +9,7 @@ import {
   PenLine,
   Search,
   ShieldCheck,
+  Smartphone,
   Sparkles,
   Sun,
 } from 'lucide-react'
@@ -37,10 +38,10 @@ const MINI = [
     color: 'bg-sky-500/10 text-sky-500',
   },
   {
-    icon: Moon,
-    title: 'Dark Mode',
-    sub: 'Nhẹ và mượt',
-    color: 'bg-violet-500/10 text-violet-500',
+    icon: Smartphone,
+    title: 'Mobile First',
+    sub: 'Tối ưu mọi thiết bị',
+    color: 'bg-amber-500/10 text-amber-500',
   },
 ]
 
@@ -253,12 +254,9 @@ export function Features() {
         <footer className="mt-20 border-t border-black/5 pt-8 text-center dark:border-white/10">
           <p className="font-display text-lg font-bold tracking-tight">
             h<span className="grad-text">note</span>
-            <span className="mx-2 font-sans text-sm font-normal text-muted-foreground">
-              Phiên bản 1.0.0
-            </span>
           </p>
           <p className="mt-1 text-sm text-muted-foreground">
-            Phát triển bởi{' '}
+            © {new Date().getFullYear()} · Phát triển bởi{' '}
             <span className="grad-text font-semibold">Hùng Bùi</span> ⚡
           </p>
         </footer>

@@ -106,6 +106,8 @@ export function Login({ mode }: { mode: AuthMode }) {
         /already registered/i.test(message)
       ) {
         toast.error('Email này đã được đăng ký. Vui lòng đăng nhập.')
+      } else if (/rate limit|rate_limit|too many/i.test(message)) {
+        toast.error('Đã gửi quá nhiều email. Vui lòng thử lại sau vài phút.')
       } else {
         toast.error(message || 'Có lỗi xảy ra')
       }

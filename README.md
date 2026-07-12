@@ -5,13 +5,38 @@ built with React, TypeScript and Vite, with a Supabase backend (Postgres + Auth)
 
 ## Features
 
-- ✍️ Create, edit, pin and delete notes with **debounced autosave**
-- 🔍 Instant client-side search across titles and content
-- 🔐 Email/password + Google / GitHub OAuth sign-in — each user sees only their own notes (RLS)
-- 👤 Profile & account management (display name, avatar, email, password)
-- 🌗 Light / dark theme with system detection, persisted to `localStorage`
-- ⌨️ Keyboard shortcuts: `Ctrl/⌘+N` new note, `Ctrl/⌘+K` focus search
-- 📱 Responsive two-pane layout (list ⇄ editor on mobile)
+**Highlights**
+
+- 🔐 **End-to-end encrypted notes** — PBKDF2 + AES-GCM, the vault key never leaves
+  your device (the server only stores ciphertext).
+- ⚡ **Realtime sync** across devices (Supabase Realtime).
+- 🗑️ **Trash with 30-day retention** — soft delete, restore, and automatic purge
+  via a `pg_cron` job.
+
+**Editing & organizing**
+
+- ✍️ Markdown editor with live preview, syntax highlighting, image upload
+  (button / paste / drop), word & reading-time counts, and **debounced autosave**.
+- 🏷️ Tags with filtering, tag suggestions, pin, pagination.
+- 🔎 Server-side **full-text search** (Postgres `tsvector`) with prefix matching
+  and highlighted results.
+- ↕️ Sort by updated / created / title; filter by pinned or encrypted.
+
+**Sharing & accounts**
+
+- 🔗 Public **read-only share links** for individual notes.
+- 🔐 Email/password + **Google / GitHub OAuth** sign-in — each user sees only
+  their own notes (RLS). Password reset, sign-out-all, delete account.
+- 👤 Profile & account management (display name, avatar, email, password).
+- 📤 Import / export notes as JSON; clean up unused images.
+
+**Experience**
+
+- 🌗 Light / dark theme (system detection, persisted), glassmorphism UI, smooth
+  micro-interactions.
+- 📱 Responsive two-pane layout (list ⇄ editor on mobile), swipe-to-delete, FAB,
+  keyboard shortcuts (`Ctrl/⌘+N` new note, `Ctrl/⌘+K` search).
+- 🛬 Public landing page at `/about`.
 
 ## Tech Stack
 
@@ -69,12 +94,15 @@ only ever reads or writes notes belonging to the signed-in user.
 
 Restart `npm run dev` after editing env vars (Vite only reads them at startup).
 
-### 2. Run the migration
+### 2. Run the migrations
 
-Open the **SQL Editor** in the Supabase dashboard and run
-[`supabase/migrations/0001_init_notes.sql`](supabase/migrations/0001_init_notes.sql).
-It creates the `notes` table, an `updated_at` trigger, and RLS policies so each
-user can only access their own rows.
+Open the **SQL Editor** in the Supabase dashboard and run every file in
+[`supabase/migrations/`](supabase/migrations/) **in order** (`0001` → `0011`):
+notes + RLS, delete-user RPC, tags, avatars/images storage, public share, secure
+notes + vaults, full-text search, realtime, and trash (`0011` enables `pg_cron`).
+
+> Skipping a migration disables the matching feature (e.g. no `0011` → no Trash;
+> no `0007`/`0008` → no encrypted notes).
 
 ### 3. Auth
 
@@ -104,15 +132,15 @@ my-note/
 │   └── migrations/           # SQL schema (notes table + RLS + triggers)
 ├── src/
 │   ├── components/
-│   │   ├── common/           # App components: Sidebar, Editor, NoteListItem,
-│   │   │                     #   EmptyState, UserMenu, UserDialogs
+│   │   ├── common/           # App components: Sidebar, Editor, AllNotes,
+│   │   │                     #   TrashNoteView, ShareDialog, SecureDialog, UserMenu
 │   │   └── ui/               # shadcn/ui primitives (button, dialog, ...)
 │   ├── hooks/                # Custom hooks (useTheme)
 │   ├── layouts/              # AppLayout (two-pane shell)
 │   ├── lib/                  # utils (cn helper)
-│   ├── pages/                # Route-level views (Login)
-│   ├── services/             # Supabase client + notes CRUD
-│   ├── store/                # Zustand stores (auth, notes)
+│   ├── pages/                # Route views (Login, Features, PublicNote, ResetPassword)
+│   ├── services/             # Supabase client + notes/storage APIs
+│   ├── store/                # Zustand stores (auth, notes, vault)
 │   ├── types/                # Shared TypeScript types
 │   ├── utils/                # Utility functions (timeAgo)
 │   ├── App.tsx               # Root: auth gate + toaster

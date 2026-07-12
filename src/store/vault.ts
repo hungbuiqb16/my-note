@@ -103,6 +103,9 @@ export const useVault = create<VaultState>((set, get) => ({
   },
 
   decrypt: async (blob) => {
+    // Empty/missing ciphertext (e.g. an encrypted note with no content) →
+    // nothing to decrypt; avoids crashing on `undefined.split(':')`.
+    if (!blob) return ''
     const { key } = get()
     if (!key) throw new Error('Vault chưa mở khóa')
     return decryptString(key, blob)

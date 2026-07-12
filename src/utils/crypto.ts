@@ -64,7 +64,8 @@ export async function decryptString(
   key: CryptoKey,
   blob: string,
 ): Promise<string> {
-  const [ivB64, cipherB64] = blob.split(':')
+  const [ivB64, cipherB64] = (blob ?? '').split(':')
+  if (!ivB64 || !cipherB64) throw new Error('Dữ liệu mã hóa không hợp lệ')
   const plain = await crypto.subtle.decrypt(
     { name: 'AES-GCM', iv: b64decode(ivB64) as BufferSource },
     key,

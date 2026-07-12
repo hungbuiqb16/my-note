@@ -1,7 +1,12 @@
 import { useEffect, useState } from 'react'
 import { Plus } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { TooltipProvider } from '@/components/ui/tooltip'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 import { Sidebar } from '@/components/common/Sidebar'
 import { Editor } from '@/components/common/Editor'
 import { AllNotes } from '@/components/common/AllNotes'
@@ -123,14 +128,24 @@ export function AppLayout() {
       </div>
 
       {!showingEditor && mobileView === 'main' && (
-        <button
-          type="button"
-          onClick={handleCreate}
-          aria-label="Ghi chú mới"
-          className="grad-btn fab fixed right-6 bottom-6 z-20 grid size-14 place-items-center rounded-full text-white"
-        >
-          <Plus className="fab-icon size-6" strokeWidth={2.5} />
-        </button>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button
+              type="button"
+              onClick={handleCreate}
+              aria-label="Ghi chú mới"
+              className="grad-btn fab fixed right-6 bottom-6 z-20 grid size-14 place-items-center rounded-full text-white"
+            >
+              <Plus className="fab-icon size-6" strokeWidth={2.5} />
+            </button>
+          </TooltipTrigger>
+          <TooltipContent
+            side="left"
+            className="border border-black/10 bg-white text-black shadow-md [&_svg]:hidden! [&>span]:hidden!"
+          >
+            Tạo ghi chú
+          </TooltipContent>
+        </Tooltip>
       )}
     </TooltipProvider>
   )

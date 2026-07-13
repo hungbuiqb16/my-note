@@ -90,7 +90,11 @@
       "Bash(wsl.exe -d Ubuntu-24.04 -- bash -lc 'export PATH=\"$HOME/.nvm/versions/node/v22.21.1/bin:$PATH\"; cd ~/personal/my-note && npm run build 2>&1 | grep -E \"error|Error|built|sw.js|manifest|precache\" | tail -12; echo \"---dist pwa files---\"; ls dist/ | grep -E \"sw|manifest|workbox\" ; echo done')",
       "Bash(wsl.exe -d Ubuntu-24.04 -- bash -lc 'export PATH=\"$HOME/.nvm/versions/node/v22.21.1/bin:$PATH\"; cd ~/personal/my-note && npm run build 2>&1 | grep -E \"error|Error|built|precache\" | tail -6; echo \"---LINT---\"; npx eslint src 2>&1 | tail -5; echo done')",
       "Bash(wsl.exe -d Ubuntu-24.04 -- bash -lc 'cd ~/personal/my-note && grep -oE \"manifest.webmanifest|registerSW.js|theme-color|rel=\\\\\"manifest\\\\\"\" dist/index.html | sort -u; echo \"---\"; head -c 400 dist/manifest.webmanifest; echo; echo done')",
-      "Bash(wsl.exe -d Ubuntu-24.04 -- bash -lc 'export PATH=\"$HOME/.nvm/versions/node/v22.21.1/bin:$PATH\"; cd ~/personal/my-note && npm run build 2>&1 | grep -E \"error|Error|built\" | tail -5; echo \"---LINT---\"; npx eslint src/pages/Features.tsx 2>&1 | tail -10; echo done')"
+      "Bash(wsl.exe -d Ubuntu-24.04 -- bash -lc 'export PATH=\"$HOME/.nvm/versions/node/v22.21.1/bin:$PATH\"; cd ~/personal/my-note && npm run build 2>&1 | grep -E \"error|Error|built\" | tail -5; echo \"---LINT---\"; npx eslint src/pages/Features.tsx 2>&1 | tail -10; echo done')",
+      "Skill(run)",
+      "Skill(run:*)",
+      "Bash(wsl.exe -d Ubuntu-24.04 -- bash -lc 'export PATH=\"$HOME/.nvm/versions/node/v22.21.1/bin:$PATH\"; cd ~/personal/my-note && npm run build >/dev/null 2>&1 && echo \"BUILD OK\"; echo \"--- JS: IntersectionObserver in About chunk ---\"; grep -rl \"IntersectionObserver\" dist/assets/*.js | head; echo \"--- CSS: reveal utilities ---\"; for c in \"opacity-0\" \"opacity-100\" \"translate-y-8\" \"duration-700\"; do n=$\\(grep -o \"\\\\\\\\\\\\\\\\?$c\" dist/assets/*.css | head -1\\); printf \"%s : %s\\\\n\" \"$c\" \"${n:-MISSING}\"; done; echo done')",
+      "Bash(wsl.exe -d Ubuntu-24.04 -- bash -lc 'cd ~/personal/my-note && for c in \"opacity-0\" \"opacity-100\" \"translate-y-8\" \"duration-700\"; do if grep -q \"\\\\.$c{\" dist/assets/*.css; then echo \"$c : OK\"; else echo \"$c : MISSING\"; fi; done; echo \"--- sample ---\"; grep -o \"\\\\.translate-y-8{[^}]*}\" dist/assets/*.css | head -1; echo done')"
     ]
   }
 }

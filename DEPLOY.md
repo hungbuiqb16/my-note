@@ -140,6 +140,19 @@ Chạy trên Supabase **SQL Editor** theo thứ tự (nếu chưa chạy):
 - [ ] Upload avatar hiển thị được.
 - [ ] Quên mật khẩu: nhận được email và link quay về đúng domain.
 - [ ] Dark mode + reload giữ nguyên trạng thái đăng nhập.
+- [ ] PWA: có nút "Cài đặt" trên trình duyệt; DevTools → Application thấy
+      Service Worker + Manifest.
+
+## PWA
+
+App là PWA (cài được + mở offline) qua `vite-plugin-pwa`. Không cần cấu hình
+Vercel thêm:
+
+- Vercel phục vụ `sw.js` / `manifest.webmanifest` như **file tĩnh** (ưu tiên
+  trước `rewrites` trong `vercel.json`), nên SPA rewrite không nuốt chúng.
+- Vercel mặc định **HTTPS** → đủ điều kiện cài PWA.
+- `registerType: 'autoUpdate'` → sau mỗi lần deploy, service worker tự cập nhật
+  ở lần truy cập kế tiếp (không cần xóa cache thủ công).
 
 ## Không cần lo
 

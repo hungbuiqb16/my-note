@@ -36,6 +36,12 @@ built with React, TypeScript and Vite, with a Supabase backend (Postgres + Auth)
   micro-interactions.
 - 📱 Responsive two-pane layout (list ⇄ editor on mobile), swipe-to-delete, FAB,
   keyboard shortcuts (`Ctrl/⌘+N` new note, `Ctrl/⌘+K` search).
+<<<<<<< HEAD
+=======
+- 📲 **Installable PWA** — install to home screen/desktop; the app shell is
+  precached (via `vite-plugin-pwa` + Workbox) so it opens offline.
+- 🛬 Public landing page at `/about`.
+>>>>>>> e6013f8 (first commit)
 
 ## Tech Stack
 
@@ -113,6 +119,19 @@ Optional **Google / GitHub OAuth** is also wired up. Enable the providers under
 **Authentication → Providers** and set the callback / redirect URLs — see
 [DEPLOY.md § 2.1](DEPLOY.md#21-đăng-nhập-oauth-google--github--nếu-dùng) for the
 exact steps. Without enabling them, the OAuth buttons will error.
+
+## PWA
+
+The app is a Progressive Web App (installable + offline app shell) via
+[`vite-plugin-pwa`](https://vite-pwa-org.netlify.app/) — configured in
+[`vite.config.ts`](vite.config.ts) with `registerType: 'autoUpdate'`.
+
+- The service worker is only active in a **production build** (not `npm run dev`)
+  and requires **HTTPS** (or `localhost`).
+- Test locally with `npm run build && npm run preview`, then open DevTools →
+  **Application → Service Workers / Manifest**; toggle **Offline** and reload —
+  the app shell still loads.
+- Only the **app shell** is cached; note data still needs a network connection.
 
 ## Available Scripts
 

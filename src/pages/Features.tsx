@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
   ArrowRight,
@@ -16,6 +17,51 @@ import {
 import { useTheme } from '@/hooks/useTheme'
 import { Button } from '@/components/ui/button'
 import { ROUTES } from '@/constants/routes'
+import { cn } from '@/lib/utils'
+
+/** Reveals its children (fade + slide up) the first time they scroll into view. */
+function Reveal({
+  children,
+  className,
+  delay = 0,
+}: {
+  children: React.ReactNode
+  className?: string
+  delay?: number
+}) {
+  const ref = useRef<HTMLDivElement>(null)
+  const [shown, setShown] = useState(false)
+
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting) {
+          setShown(true)
+          io.disconnect()
+        }
+      },
+      { threshold: 0.15, rootMargin: '0px 0px -10% 0px' },
+    )
+    io.observe(el)
+    return () => io.disconnect()
+  }, [])
+
+  return (
+    <div
+      ref={ref}
+      style={{ transitionDelay: shown ? `${delay}ms` : '0ms' }}
+      className={cn(
+        'transition-all duration-700 ease-out',
+        shown ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0',
+        className,
+      )}
+    >
+      {children}
+    </div>
+  )
+}
 
 // Small highlight chips under the hero copy.
 const MINI = [
@@ -180,73 +226,81 @@ export function Features() {
 
         {/* Features — bento grid */}
         <section id="tinh-nang" className="mt-24 scroll-mt-8">
-          <div className="text-center">
+          <Reveal className="text-center">
             <h2 className="font-display text-3xl font-bold tracking-tight text-balance md:text-4xl">
               Tất cả tính năng{' '}
               <span className="grad-text whitespace-nowrap">trong một nơi</span>
             </h2>
-          </div>
+          </Reveal>
 
           <div className="mt-12 grid gap-8 lg:grid-cols-3">
             {/* Tall gradient card */}
-            <div className="grad-btn rounded-3xl p-8 text-white shadow-lift transition-all hover:-translate-y-1 lg:row-span-2">
-              <div className="grid size-12 place-items-center rounded-2xl bg-white/15">
-                <PenLine className="size-6" />
-              </div>
-              <h3 className="mt-8 font-display text-xl font-bold">
-                Soạn thảo mạnh mẽ
-              </h3>
-              <p className="mt-4 leading-relaxed font-medium text-white/90">
-                Tạo và chỉnh sửa ghi chú với Markdown, xem trước trực tiếp, tự
-                động lưu, chèn ảnh, tô sáng cú pháp code, đếm từ và nhiều công cụ
-                hỗ trợ viết.
-              </p>
-            </div>
-
-            <div className="rounded-3xl border border-black/5 bg-card p-8 shadow-soft transition-all hover:-translate-y-1 hover:shadow-lift dark:border-white/10">
-              <div className="grid size-12 place-items-center rounded-2xl bg-sky-500/10 text-sky-500 shadow-sm">
-                <Search className="size-6" />
-              </div>
-              <h3 className="mt-6 font-display text-xl font-bold">
-                Quản lý thông minh
-              </h3>
-              <p className="mt-3 text-sm leading-relaxed font-medium text-muted-foreground">
-                Sắp xếp ghi chú bằng thẻ (Tags), tìm kiếm toàn văn, bộ lọc nâng
-                cao, ghim ghi chú, phân trang và thùng rác khôi phục trong 30
-                ngày.
-              </p>
-            </div>
-
-            <div className="rounded-3xl border border-black/5 bg-card p-8 shadow-soft transition-all hover:-translate-y-1 hover:shadow-lift dark:border-white/10">
-              <div className="grid size-12 place-items-center rounded-2xl bg-emerald-500/10 text-emerald-500 shadow-sm">
-                <Lock className="size-6" />
-              </div>
-              <h3 className="mt-6 font-display text-xl font-bold">
-                Bảo mật & Riêng tư
-              </h3>
-              <p className="mt-3 text-sm leading-relaxed font-medium text-muted-foreground">
-                Mã hóa đầu cuối (End-to-End Encryption) cho ghi chú quan trọng,
-                chia sẻ an toàn, mỗi người dùng chỉ truy cập được dữ liệu của
-                chính mình.
-              </p>
-            </div>
-
-            <div className="rounded-3xl border border-black/5 bg-card p-8 shadow-soft transition-all hover:-translate-y-1 hover:shadow-lift lg:col-span-2 dark:border-white/10">
-              <div className="flex items-center justify-between gap-6">
-                <div>
-                  <h3 className="font-display text-xl font-bold">
-                    Đồng bộ mọi nơi
-                  </h3>
-                  <p className="mt-3 font-medium text-muted-foreground">
-                    Đồng bộ thời gian thực trên nhiều thiết bị, hỗ trợ
-                    Import/Export dữ liệu.
-                  </p>
+            <Reveal className="lg:row-span-2">
+              <div className="grad-btn h-full rounded-3xl p-8 text-white shadow-lift transition-all hover:-translate-y-1">
+                <div className="grid size-12 place-items-center rounded-2xl bg-white/15">
+                  <PenLine className="size-6" />
                 </div>
-                <div className="grid size-16 shrink-0 place-items-center rounded-2xl bg-violet-500/10 text-violet-500 shadow-sm">
-                  <Cloud className="size-8" />
+                <h3 className="mt-8 font-display text-xl font-bold">
+                  Soạn thảo mạnh mẽ
+                </h3>
+                <p className="mt-4 leading-relaxed font-medium text-white/90">
+                  Tạo và chỉnh sửa ghi chú với Markdown, xem trước trực tiếp, tự
+                  động lưu, chèn ảnh, tô sáng cú pháp code, đếm từ và nhiều công
+                  cụ hỗ trợ viết.
+                </p>
+              </div>
+            </Reveal>
+
+            <Reveal delay={100}>
+              <div className="rounded-3xl border border-black/5 bg-card p-8 shadow-soft transition-all hover:-translate-y-1 hover:shadow-lift dark:border-white/10">
+                <div className="grid size-12 place-items-center rounded-2xl bg-sky-500/10 text-sky-500 shadow-sm">
+                  <Search className="size-6" />
+                </div>
+                <h3 className="mt-6 font-display text-xl font-bold">
+                  Quản lý thông minh
+                </h3>
+                <p className="mt-3 text-sm leading-relaxed font-medium text-muted-foreground">
+                  Sắp xếp ghi chú bằng thẻ (Tags), tìm kiếm toàn văn, bộ lọc
+                  nâng cao, ghim ghi chú, phân trang và thùng rác khôi phục
+                  trong 30 ngày.
+                </p>
+              </div>
+            </Reveal>
+
+            <Reveal delay={200}>
+              <div className="rounded-3xl border border-black/5 bg-card p-8 shadow-soft transition-all hover:-translate-y-1 hover:shadow-lift dark:border-white/10">
+                <div className="grid size-12 place-items-center rounded-2xl bg-emerald-500/10 text-emerald-500 shadow-sm">
+                  <Lock className="size-6" />
+                </div>
+                <h3 className="mt-6 font-display text-xl font-bold">
+                  Bảo mật & Riêng tư
+                </h3>
+                <p className="mt-3 text-sm leading-relaxed font-medium text-muted-foreground">
+                  Mã hóa đầu cuối (End-to-End Encryption) cho ghi chú quan
+                  trọng, chia sẻ an toàn, mỗi người dùng chỉ truy cập được dữ
+                  liệu của chính mình.
+                </p>
+              </div>
+            </Reveal>
+
+            <Reveal className="lg:col-span-2" delay={300}>
+              <div className="rounded-3xl border border-black/5 bg-card p-8 shadow-soft transition-all hover:-translate-y-1 hover:shadow-lift dark:border-white/10">
+                <div className="flex items-center justify-between gap-6">
+                  <div>
+                    <h3 className="font-display text-xl font-bold">
+                      Đồng bộ mọi nơi
+                    </h3>
+                    <p className="mt-3 font-medium text-muted-foreground">
+                      Đồng bộ thời gian thực trên nhiều thiết bị, hỗ trợ
+                      Import/Export dữ liệu.
+                    </p>
+                  </div>
+                  <div className="grid size-16 shrink-0 place-items-center rounded-2xl bg-violet-500/10 text-violet-500 shadow-sm">
+                    <Cloud className="size-8" />
+                  </div>
                 </div>
               </div>
-            </div>
+            </Reveal>
           </div>
         </section>
 
